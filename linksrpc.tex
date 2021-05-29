@@ -385,11 +385,15 @@ This summarizes this paper...
 \label{app:1}
 
 This section reminds the reader of the polymorphic RPC calculus
-\cite{CHOI:scp2020}. It is a polymorphically typed call-by-value
-$\lambda$-calculus with location annotations on $\lambda$-abstractions
-specifying where to run. The calculus offers the notion of polymorphic
-location to write polymorphically located functions succinctly, which
-is convenient for programmers.
+\cite{CHOI:scp2020}.
+%
+It is a polymorphically typed call-by-value $\lambda$-calculus with
+location annotations on $\lambda$-abstractions specifying where to
+run.
+%
+The calculus offers the notion of polymorphic location to write
+polymorphically located functions succinctly, which is convenient for
+programmers.
 
 \subsection{The Syntax and the Semantics}
 \label{sec:polyrpc:syntax&semantics}
@@ -462,26 +466,54 @@ Figure \ref{fig:polyrpc} shows the syntax and semantics of the
 polymorphic RPC calculus, {\polyrpc} that allows programmers to use
 the same syntax of $\lambda$-application for both local and remote
 calls, and allows them to compose differently located functions
-arbitrarily.  An important feature is the notion of location variable
-$l$ for which a location constant $a$ can be substituted. A syntactic
-object $\Loc$ is either a location constant or a location variable.
+arbitrarily.
+%
+An important feature is the notion of location variable $l$ for which
+a location constant $a$ can be substituted.
+%
+A syntactic object $\Loc$ is either a location constant or a location
+variable.
+%
 Assuming the client-server model in the calculus, location constants
 are either $\client$ denoting client or $\server$ denoting server.
 
-In the syntax, $M$ denotes terms, and $V$ denotes values. Every
-$\lambda$-abstraction $\lamL{\Loc}{x}{M}$ has a location annotation of
-$\Loc$. By substituting a location $b$ for a location variable
-annotation, $(\lamL{l}{x}{M})\subst{b}{l}$ becomes a monomorphic
-$\lambda$-abstraction $\lamL{b}{x}{(M\subst{b}{l})}$. This location
-variable is abstracted by the location abstraction construct $\Lambda
-l.V$, and it is instantiated by the location application construct
-$M[\Loc]$. Term applications are denoted by $L \ M$.  The rest of the
-syntax are straightforward.
+In the syntax, $M$ denotes terms, and $V$ denotes values.
+%
+Every $\lambda$-abstraction $\lamL{\Loc}{x}{M}$ has a location
+annotation of $\Loc$.
+%
+By substituting a location $b$ for a location variable annotation,
+$(\lamL{l}{x}{M})\subst{b}{l}$ becomes a monomorphic
+$\lambda$-abstraction $\lamL{b}{x}{(M\subst{b}{l})}$.
+%
+This location variable is abstracted by the location abstraction
+construct $\Lambda l.V$, and it is instantiated by the location
+application construct $M[\Loc]$.
+%
+Term applications are denoted by $L \ M$.  The rest of the syntax are
+straightforward.
 
-	The semantics of {\polyrpc} is defined in the style of a big-step operational semantics whose evaluation judgments, $\evalRPC{M}{a}{V}$, denote that a term $M$ evaluates to a value $V$ at location $a$.
-	In the semantics, location annotated $\lambda$-abstractions, type abstractions, and location abstractions are all values. So, (Abs), (Tabs), and (Labs) are straightforwardly defined as an identity evaluation relation over them.
-	(App) defines local calls when $a=b$ and remote calls when $a\not=b$ in the same syntax of lambda applications. The evaluation of an application $L \ M$ at location $a$ performs $\beta$-reduction at location $b$, where a $\lambda$-abstraction $\lamL{b}{x}{N}$ from $L$ has as an annotation, with a value $W$ from $M$, and it continues to evaluate the $\beta$-reduced term $N\subst{W}{x}$, which is a substitution of $W$ for $x$ in $N$, at the same location.
-        The remaining semantics rules are easily understood.
+The semantics of {\polyrpc} is defined in the style of a big-step
+operational semantics whose evaluation judgments, $\evalRPC{M}{a}{V}$,
+denote that a term $M$ evaluates to a value $V$ at location $a$.
+%
+In the semantics, location annotated $\lambda$-abstractions, type
+abstractions, and location abstractions are all values.
+%
+So, (Abs), (Tabs), and (Labs) are straightforwardly defined as an
+identity evaluation relation over them.
+%
+(App) defines local calls when $a=b$ and remote calls when $a\not=b$
+in the same syntax of lambda applications.
+%
+The evaluation of an application $L \ M$ at location $a$ performs
+$\beta$-reduction at location $b$, where a $\lambda$-abstraction
+$\lamL{b}{x}{N}$ from $L$ has as an annotation, with a value $W$ from
+$M$, and it continues to evaluate the $\beta$-reduced term
+$N\subst{W}{x}$, which is a substitution of $W$ for $x$ in $N$, at the
+same location.
+%
+The remaining semantics rules are easily understood.
 
 \begin{figure}[t]
 \centering            
@@ -568,53 +600,76 @@ syntax are straightforward.
 
 Figure \ref{fig:polyrpctysystem} shows a type system for the
 polymorphic RPC calculus \cite{CHOI:scp2020} that can identify remote
-procedure calls at the type level, supporting location
-polymorphism. The type language allows function types $A \funL{\Loc}
-B$. Then every $\lambda$-abstraction at unknown location gets assigned
-$A\funL{l} B$ using some location variable $l$. A universal quantifier
-over a location variable, $\forall l. A$, is also introduced to allow
-to abstract such occurrences of location variables.
+procedure calls at the type level, supporting location polymorphism.
+%
+The type language allows function types $A \funL{\Loc} B$.
+%
+Then every $\lambda$-abstraction at unknown location gets assigned
+$A\funL{l} B$ using some location variable $l$.
+%
+A universal quantifier over a location variable, $\forall l. A$, is
+also introduced to allow to abstract such occurrences of location
+variables.
 
 Typing judgments are in the form of $\typing{\tyenv}{\Loc}{M}{A}$,
 saying a term $M$ at location $a$ has type $A$ under a type
-environment $\tyenv$.  The location annotation, $\Loc$, is either a
-location variable or constant.  Typing environments $\tyenv$ have location variables, type
-variables, and types of variables, as $\{l_1,
+environment $\tyenv$.
+%
+The location annotation, $\Loc$, is either a location variable or
+constant.
+%
+Typing environments $\tyenv$ have location variables, type variables,
+and types of variables, as $\{l_1,
 \cdots,l_n,\alpha_1,\cdots,\alpha_k, x_1:A_1, \cdots, x_m:A_m\}$.
+%
 They are used to keep track of a set of free location, type, and value
 variables in the context of a given term.
 
 
 The typing rules for the polymorphic RPC calculus are defined as
-follows.  (T-App) is a refinement of the conventional typing rule for
+follows.
+%
+(T-App) is a refinement of the conventional typing rule for
 $\lambda$-applications with respect to the combinations of location
 $\Loc$ (where to evaluate the application) and location $\Loc'$ (where
-to evaluate the function).  
-When $\Loc=\Loc'$, one can statically decide
-that it is a local procedure call.
+to evaluate the function).
+%
+When $\Loc=\Loc'$, one can statically decide that it is a local
+procedure call.
+%
 Otherwise, $\Loc$ is different from $\Loc'$.
-When both locations are constants as $\Loc=a$ and $\Loc'=b$,
-$L \ M$ is statically found to be a remote procedure call: if
-$a=\client$ and $b=\server$, it is to invoke a server function from
-the client, and if $a=\server$ and $b=\client$, it is to invoke a
-client function from the server.
-When at least one of them is a location variable, we cannot make a decision statically.
+%
+When both locations are constants as $\Loc=a$ and $\Loc'=b$, $L \ M$
+is statically found to be a remote procedure call: if $a=\client$ and
+$b=\server$, it is to invoke a server function from the client, and if
+$a=\server$ and $b=\client$, it is to invoke a client function from
+the server.
+%
+When at least one of them is a location variable, we cannot make a
+decision statically.
+%
 (T-Labs) and (T-Lapp) are similar to the typing rules for type
-abstraction and type application. (T-Labs) checks if its bound
-location variable does not appear in the type environment and in the
-contextual location. (T-Lapp) substitutes $\Loc'$ for all occurrences
-of a location variable $l$ on $\lambda$-abstractions in $M$.
+abstraction and type application.
+%
+(T-Labs) checks if its bound location variable does not appear in the
+type environment and in the contextual location.
+%
+(T-Lapp) substitutes $\Loc'$ for all occurrences of a location
+variable $l$ on $\lambda$-abstractions in $M$.
 
 The type soundness of the type system for the polymorphic RPC
 calculus, which was formulated as Theorem \ref{thm:typesoundness} and
 was proved by \cite{CHOI:scp2020}, guarantees that every remote
 procedure call thus identified statically will never change to a local
-procedure call under evaluation. This enables compilers to generate
-call instructions for local calls and network communication for remote
-calls safely even thogh both are in the same syntax of lambda
-applications.
+procedure call under evaluation.
+%
+This enables compilers to generate call instructions for local calls
+and network communication for remote calls safely even thogh both are
+in the same syntax of lambda applications.
 
-\begin{theorem}[Type soundness for \polyrpc \cite{CHOI:scp2020}] For a  closed term $M$, if \ $\typing{\emptyset}{a}{M}{A}$ and $\evalRPC{M}{a}{V}$, then $\typing{\emptyset}{a}{V}{A}$.
+\begin{theorem}[Type soundness for \polyrpc \cite{CHOI:scp2020}]
+For a closed term $M$, if \ $\typing{\emptyset}{a}{M}{A}$ and
+$\evalRPC{M}{a}{V}$, then $\typing{\emptyset}{a}{V}{A}$.
 \label{thm:typesoundness}
 \end{theorem}
 
