@@ -92,6 +92,7 @@
 \newcommand{\rpc}{$\lambda_{rpc}$\xspace}
 \newcommand{\typedrpc}{$\lambda_{rpc}^{typed}$\xspace}
 \newcommand{\polyrpc}{$\lambda_{rpc}^{\forall}$\xspace}
+\newcommand{\linksrpc}{$\lambda_{rpc}^{Links}$\xspace}
 \newcommand{\kindedpolyrpc}{$\lambda_{rpc}^{\forall,k}$\xspace}
 
 \newcommand{\stateencrpc}{$\lambda_{rpc}^{enc}$\xspace}
@@ -301,7 +302,9 @@ This summarizes this paper...
 	
 \section{Introduction}
 \label{sec:intro}
-	
+
+A motivation is ...
+
 %\lipsum[2]
 	
 %% \subsection{Preliminaries}
@@ -373,10 +376,73 @@ This summarizes this paper...
 \section{A RPC Calculus for Links}
 \label{sec:linksrpc}
 
-	
+\begin{figure}[t]
+\centering  
+\begin{tabular}{ l  l  r  c  l }
+\multicolumn{5}{l}{\textbf{Syntax}} \\
+ & Location & $a,b$   & $::=$ & $\client \ \ | \  \  \server$ \\
+ &          & $?a$    & $::=$  & $a  \ \ |  \ \ (unknown) $ \\
+ & Term     & $L,M,N$ & $::=$  & $V  \ | \  L \ M  \ | \  M[A]  \ | \  (L,M)  \ |  \ \pi_i(M)$ \\
+ & Value & $V,W$ & $::=$ & $x  \ \ |  \ \ \lambda^{?a} x.M  \ \ |  \ \ \Lambda\alpha.V  \ \ |  \ \ (V,W)$
+\\[\ruleverticalsep]
+\multicolumn{5}{l}{\textbf{Types}} \\
+& Type & $A,B,C$ & $::=$
+& $base  \ \ | \ \  A \rightarrow B  \ \ | \ \  \alpha  \ \ | \ \  A \times B  \ \ | \ \  \forall\alpha.A$ \\[\ruleverticalsep]
+\end{tabular}
+\caption{The Links-RPC calculus \linksrpc}
+\label{fig:linksrpc}
+\end{figure}
+
+This section describes an untyped RPC calculus that extends with
+unannotated $\lambda$ abstractions whose location is not specified.
+%
+The untyped and extended RPC calculus intends to capture the RPC
+feature of the Links programming language
+\cite{Cooper:2006:LWP:1777707.1777724} in a simple way.
+%
+Let us call it \linksrpc.
+
+
+The terms and types of the Links-RPC calculus are shown in Figure
+\ref{fig:linksrpc}.
+%
+They are almost the same as those for the polymorphic RPC calculus
+\cite{CHOI:scp2020} available in the appendix for reference.
+%
+In the calculus, it is not mandatory to annotate locations to
+$\lambda$ abstractions.
+%
+$?a$ means that every annotation is either a location constant $a$ or
+unknown.
+%
+There is no location variables used in the calculus.
+%
+Types are {\it untyped} in terms of specifying locations, which means
+that function types are $A \rightarrow B$ with no locations.
+%
+
+
+The semantics for \linksrpc is almost the same as for the polymorphic
+RPC calculus \cite{CHOI:scp2020} available in the appendix for
+reference.
+%
+A notable difference is an evaluation rule for unannotated $\lambda$
+abstractions that evaluate to $\lambda$ abstractions annotated with
+locations of evaluation as
+
+\[
+    \begin{prooftree}
+      \infer[left label=(UnknownAbs)]0{ \evalRPC{\lamL{}{x}{M}}{a}{\lamL{a}{x}{M} }}
+    \end{prooftree}
+\]
+This evaluation rule was proposed by the original RPC calculus
+\cite{Cooper:2009:RC:1599410.1599439}.
+%
+
+
 %% \paragraph{Acknowledgements} \lipsum[6]
 	
-%	\newpage
+% \newpage
 \bibliography{polyrpc2021}
 	
 \appendix
