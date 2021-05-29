@@ -86,7 +86,7 @@
 \usepackage{ebproof}
 \usepackage{multicol}
 \usepackage{xspace}
-
+\usepackage{stmaryrd} % \llbracket \rrbracket
 
 %% Macros for General Inference Rules
 \newcommand{\rpc}{$\lambda_{rpc}$\xspace}
@@ -228,6 +228,10 @@
 
 % \newcommand{\ecomp}[1]{[\![#1]\!]}
 \newcommand{\ecomp}[1]{\llbracket#1\rrbracket}
+
+\newcommand{\tycomp}[2]{\llbracket#1\rrbracket_{#2}}
+\newcommand{\adjcomp}[4]{#1:#2 \Rightarrow #3:#4}
+
 
 \newcommand{\FUNS}{\Phi}
 \newcommand{\funstore}{\FUNS}
@@ -373,10 +377,20 @@ A motivation is ...
 %% 	%% 	\label{fig:example}
 %% 	%% \end{figure}
 
-\section{A RPC Calculus for Links}
+\section{A Links-RPC Calculus}
 \label{sec:linksrpc}
 
-\begin{figure}[t]
+This section describes a RPC calculus that extends with unannotated
+$\lambda$-abstractions whose location is not specified.
+%
+The extended RPC calculus intends to capture the RPC feature of the
+Links programming language \cite{Cooper:2006:LWP:1777707.1777724} in a
+simple way.
+%
+Let us call it a Links-RPC calculus, \linksrpc.
+
+
+\begin{figure}[h]
 \centering  
 \begin{tabular}{ l  l  r  c  l }
 \multicolumn{5}{l}{\textbf{Syntax}} \\
@@ -387,58 +401,222 @@ A motivation is ...
 \\[\ruleverticalsep]
 \multicolumn{5}{l}{\textbf{Types}} \\
 & Type & $A,B,C$ & $::=$
-& $base  \ \ | \ \  A \rightarrow B  \ \ | \ \  \alpha  \ \ | \ \  A \times B  \ \ | \ \  \forall\alpha.A$ \\[\ruleverticalsep]
+& $base  \ \ | \ \  A \rightarrow B  \ \ | \ \  \alpha  \ \ | \ \  A \times B  \ \ | \ \  \forall\alpha.A$
 \end{tabular}
 \caption{The Links-RPC calculus \linksrpc}
 \label{fig:linksrpc}
 \end{figure}
 
-This section describes an untyped RPC calculus that extends with
-unannotated $\lambda$ abstractions whose location is not specified.
-%
-The untyped and extended RPC calculus intends to capture the RPC
-feature of the Links programming language
-\cite{Cooper:2006:LWP:1777707.1777724} in a simple way.
-%
-Let us call it \linksrpc.
-
-
 The terms and types of the Links-RPC calculus are shown in Figure
 \ref{fig:linksrpc}.
 %
-They are almost the same as those for the polymorphic RPC calculus
-\cite{CHOI:scp2020} available in the appendix for reference.
-%
 In the calculus, it is not mandatory to annotate locations to
-$\lambda$ abstractions.
+$\lambda$ abstractions. This is for programmers' convenience.
 %
 $?a$ means that every annotation is either a location constant $a$ or
 unknown.
 %
-There is no location variables used in the calculus.
+Regardless of the presence of location annotations, function types are
+$A \rightarrow B$ with no locations in a type-level.
 %
-Types are {\it untyped} in terms of specifying locations, which means
-that function types are $A \rightarrow B$ with no locations.
+No notion of location variables is available in the calculus, and so
+there are no location abstractions nor applications.
+%
+Other than these differences, the terms and types are almost the same
+as those for the polymorphic RPC calculus, which
+is in the appendix for reference.
 %
 
 
-The semantics for \linksrpc is almost the same as for the polymorphic
-RPC calculus \cite{CHOI:scp2020} available in the appendix for
-reference.
-%
-A notable difference is an evaluation rule for unannotated $\lambda$
-abstractions that evaluate to $\lambda$ abstractions annotated with
-locations of evaluation as
-
+The semantics for \linksrpc includes an evaluation rule for
+unannotated $\lambda$-abstractions, which once was proposed by the
+original RPC calculus \cite{Cooper:2009:RC:1599410.1599439}, that
+evaluate to $\lambda$-abstractions annotated with the location of
+evaluation as
 \[
-    \begin{prooftree}
-      \infer[left label=(UnknownAbs)]0{ \evalRPC{\lamL{}{x}{M}}{a}{\lamL{a}{x}{M} }}
-    \end{prooftree}
+\begin{prooftree}
+  \infer[left label=(Unknown-Abs)]0{ \evalRPC{\lamL{}{x}{M}}{a}{\lamL{a}{x}{M} }}
+\end{prooftree}
 \]
-This evaluation rule was proposed by the original RPC calculus
-\cite{Cooper:2009:RC:1599410.1599439}.
 %
 
+The typing rules are actually the same as for the System-F calculus
+except the appearance of annotated $\lambda$-abstractions whose
+locations are disregarded by types.
+%
+\[
+\begin{prooftree}
+  \hypo{ \typing{\tyenvExt{x}{A}}{}{M}{B} }
+  \infer[left label=(T-?a-Abs)]1{ \typing{\tyenv}{}{\lamL{?a}{x}{M}}{A \rightarrow B} }
+\end{prooftree}
+\]
+
+
+\section{Compiling \linksrpc into \polyrpc}
+\label{sec:translationtopolyrpc}
+
+The purpose of compiling the Links-RPC calculus into the polymorphic
+RPC calculus is to recover location information during the evaluation of
+\linksrpc terms and to express it by located types of \polyrpc explicitly.
+%
+Such statically recovered location information would be made use of
+later for transformations and optimizations, such as avoiding
+unnecessary location checking at runtime for solely local computation.
+%
+Basically, this compilation would translate normal function types
+$A_1 \rightarrow A_2$ into located function types $A_1' \funL{\Loc}
+A_2'$ for some $A_i$s.
+%
+Then where do locations, such as $\Loc$, come from?
+%
+Generally, they are nowhere in the Links-RPC terms and types.
+%
+Therefore, a heuristic should be introduced to recover location
+information lack in the terms and types.
+
+
+A heuristic approach is to view \linksrpc types $A$ as \polyrpc types $B$ where
+%
+\begin{itemize}
+  \item the {\it skeleton} of $B$ obtained from erasing all locations
+    from it is the same as $A$, and
+  \item all the erased locations are assumed to be the same as a given
+    location $\Loc$.
+\end{itemize}
+%
+For example, the type of a client map function, $(Int \rightarrow Int)
+\rightarrow [Int] \rightarrow [Int]$, can be viewed as $(Int \funL{\client}
+Int) \funL{\client} [Int] \funL{\client} [Int]$.
+%
+As is seen, not only the two function types on the spine get client
+locations but the argument function type is also annotated with it.
+
+
+%
+This idea can be formulated as a type translation $\tycomp{A}{\Loc} = B$:
+
+\begin{figure}[h]
+\centering
+\begin{tabular}{l l l l l l l l l l l l l l}
+$\tycomp{\alpha}{\Loc}$ & $=$ & $\alpha$
+&
+$\tycomp{A \funL{} B}{\Loc}$ & $=$ & $\tycomp{A}{\Loc} \funL{Loc} \tycomp{B}{\Loc}$
+\\
+$\tycomp{base}{\Loc}$ & $=$ & $base$
+&
+$\tycomp{A\times B}{\Loc}$ & $=$ & $\tycomp{A}{\Loc}\times \tycomp{B}{\Loc}$
+&
+$\tycomp{\forall\alpha.A}{\Loc}$ & $=$ & $\forall\alpha.\tycomp{A}{\Loc}$
+\\
+\end{tabular}
+\caption{A type compilation of \linksrpc into \polyrpc}
+\label{fig:typecompilation}
+\end{figure}
+
+Note that the explained client map function type in \polyrpc is
+obtained from $\tycomp{(Int \rightarrow Int) \rightarrow [Int] \rightarrow
+  [Int]}{\client}$ by extending it over list types as
+$\tycomp{[A]}{\Loc} = [ \tycomp{A}{\Loc} ]$ in a straightforward way.
+
+Obviously, this heurisitc is not always satisfactory.
+%
+For example, $map \ f \ list$ is legitimate in \linksrpc even when
+$map$ of the client map function type takes a function of type $Int
+\funL{\client} Int$ but $f$ of type $Int \funL{\server} Int$ is given
+as an argument in \polyrpc.
+%
+This is because \linksrpc can deal with this discrepancy by runtime
+location checking.
+%
+However, there should be some adjustments to locations in compiled
+types and terms.
+
+A type-directed location adjustment is formulated as the following
+form of judgments:
+\[
+\adjcomp{M}{A}{M'}{A'}
+\]
+From a term $M$ of type $A$, a new adjusted term $M'$ is derived under
+the guidance of another type $A'$ having the same skeleton as but
+possibly locatational discrepancies with $A$.
+%
+For example,
+\[
+\adjcomp{f}{Int \funL{\server} Int \ }{\ (\lamL{\client}{x}{f
+    \ x})}{Int \funL{\client} Int}
+\]
+where given the three inputs, the adjusted client function
+$\lamL{\client}{x}{f \ x}$ is derived.
+%
+Then the adjusted function could be fed into the client map function
+as its first argument in \polyrpc.
+
+A type-directed location adjustment to terms is formulated as Figure
+\ref{fig:locationadjustment}. 
+%
+The rules are defined in terms of type structure, actually doing the
+eta conversion for function, pair, polymorphic, polymorphic location
+types of given terms.
+%
+By the conversion, they will adjust all discrepant locations of two
+function types to produce new terms of the adjusted types.
+%
+
+
+\begin{figure}[h]
+\centering
+\begin{tabular}{p{\linewidth}}
+  {
+    \begin{prooftree}
+      \hypo{  }
+      \infer1{ \adjcomp{M}{A}{M}{A} }
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \adjcomp{x}{C}{N}{A} \ \ \ \adjcomp{M \ N}{B}{M'}{D} }
+      \infer1{ \adjcomp{M}{A\funL{\Loc_1}B}{\lamL{\Loc_2}{x}{M'}}{C\funL{\Loc_2}D} }
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \adjcomp{\pi_i{M}}{A_i}{M_i'}{A_i'} \ \ \ (i=1,2) }
+      \infer1{ \adjcomp{M}{A_1 \times A_2}{(M_1,M_2)}{A_1'\times A_2'} }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \adjcomp{M[\alpha]}{A}{M'}{B} }
+      \infer1{ \adjcomp{M}{\forall\alpha.A}{\Lambda\alpha.M'}{\forall\alpha.B} }
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \adjcomp{M[l]}{A}{M'}{B} }
+      \infer1{ \adjcomp{M}{\forall l.A}{\Lambda l.M'}{\forall l.B} }
+    \end{prooftree}
+  }
+\end{tabular}
+\caption{A type-directed location adjustment to terms}
+\label{fig:locationadjustment}
+\end{figure}
+
+Using the rules, one can derive the example adjustment judgment for
+given $f$, the server function type, and the client function,
+producing the adjusted term, $\lamL{\client}{x}{f \ x}$.
+
+Based on the heuristic type compilation with the type-directed
+location adjustment, we can define the compilation rules of \linksrpc
+into \polyrpc.
+
+\begin{figure}[h]
+\centering
+\begin{tabular}{p{\linewidth}}
+\end{tabular}
+\caption{A compilation of \linksrpc into \polyrpc}
+\label{fig:compilationoflinksrpc}
+\end{figure}
+
+\section{Compiling of {\polyrpc} back into {\linksrpc} extended with GADTs}
+\label{sec:compilationwithgadts}
 
 %% \paragraph{Acknowledgements} \lipsum[6]
 	
