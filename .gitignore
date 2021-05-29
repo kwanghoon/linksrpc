@@ -1,0 +1,15 @@
+*~
+*.aux
+*.blg
+*.bbl
+*.pdf
+*.log
+*.out
+*.synctex.gz
+*.toc
+acmart-master
+acmart-primary.zip
+comment.cut
+sample-base.bib
+sample-franklin.png
+help

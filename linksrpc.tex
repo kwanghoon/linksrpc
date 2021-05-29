@@ -1,0 +1,624 @@
+\documentclass[a4paper]{article}
+
+\RequirePackage[undo-recent-deprecations]{expl3} %% Fix: latex3 problem with ebproof
+
+\usepackage[pages=all, color=black, position={current page.south}, placement=bottom, scale=1, opacity=1, vshift=5mm]{background}
+%% \SetBgContents{
+%% 	\tt This work is shared under a \href{https://creativecommons.org/licenses/by-sa/4.0/}{CC BY-SA 4.0 license} unless otherwise noted
+%% }      % copyright
+
+\usepackage[margin=1in]{geometry} % full-width
+
+% AMS Packages
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+
+% Unicode
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\hypersetup{
+	unicode,
+%	colorlinks,
+%	breaklinks,
+%	urlcolor=cyan, 
+%	linkcolor=blue, 
+	pdfauthor={Author One, Author Two, Author Three},
+	pdftitle={A simple article template},
+	pdfsubject={A simple article template},
+	pdfkeywords={article, template, simple},
+	pdfproducer={LaTeX},
+	pdfcreator={pdflatex}
+}
+
+% Vietnamese
+%\usepackage{vntex}
+
+% Natbib
+\usepackage[sort&compress,numbers,square]{natbib}
+%\bibliographystyle{mplainnat}
+\bibliographystyle{plain}
+  
+% Theorem, Lemma, etc
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{claim}{Claim}[theorem]
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{hypothesis}[theorem]{Hypothesis}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{criterion}[theorem]{Criterion}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{principle}[theorem]{Principle}
+
+%%% ebproof column width
+\newcommand{\rulewidth}{.8\linewidth}
+\newcommand{\ruleverticalsep}{0.5cm}
+
+\usepackage{graphicx, color}
+\graphicspath{{fig/}}
+
+%\usepackage[linesnumbered,ruled,vlined,commentsnumbered]{algorithm2e} % use algorithm2e for typesetting algorithms
+\usepackage{algorithm, algpseudocode} % use algorithm and algorithmicx for typesetting algorithms
+\usepackage{mathrsfs} % for \mathscr command
+
+\usepackage{lipsum}
+
+%%% RPC Calculi related commands %%%
+
+%%
+\usepackage{listings}
+\lstset
+{
+    basicstyle=\footnotesize\ttfamily,
+    numbers=left,
+    stepnumber=1,
+    frame=single,
+}
+\usepackage{ebproof}
+\usepackage{multicol}
+\usepackage{xspace}
+
+
+%% Macros for General Inference Rules
+\newcommand{\rpc}{$\lambda_{rpc}$\xspace}
+\newcommand{\typedrpc}{$\lambda_{rpc}^{typed}$\xspace}
+\newcommand{\polyrpc}{$\lambda_{rpc}^{\forall}$\xspace}
+\newcommand{\kindedpolyrpc}{$\lambda_{rpc}^{\forall,k}$\xspace}
+
+\newcommand{\stateencrpc}{$\lambda_{rpc}^{enc}$\xspace}
+\newcommand{\statefulrpc}{$\lambda_{rpc}^{state}$\xspace}
+
+\newcommand{\cs}{$\lambda_{cs}$\xspace}
+\newcommand{\polycs}{$\lambda_{cs}^{\forall}$\xspace}
+\newcommand{\stateenccs}{$\lambda_{cs}^{enc}$\xspace}
+\newcommand{\statefulcs}{$\lambda_{cs}^{state}$\xpace}
+
+\newcommand{\client}{\textbf{c}}
+\newcommand{\server}{\textbf{s}}
+\newcommand{\clientserver}{\textbf{cs}}
+
+\newcommand{\statickind}{sta}
+\newcommand{\dynamickind}{dyn}
+
+\newcommand{\evalRPC}[3]{#1\Downarrow_{#2}#3}
+\newcommand{\evalRPCC}[2]{#1\Downarrow_{\client}#2}
+\newcommand{\evalRPCS}[2]{#1\Downarrow_{\server}#2}
+\newcommand{\lamL}[3]{\lambda^{#1}#2.#3}
+\newcommand{\appL}[3]{#1{\ }^{#2}#3}
+\newcommand{\subst}[2]{\{#1/#2\}}
+\newcommand{\llet}[3]{\textsf{let} \ #1 = #2 \ \textsf{in} \ #3}
+\newcommand{\ldokeyword}{\textsf{do}}
+\newcommand{\ldo}[3]{\textsf{do} \ #1 \leftarrow #2 \ \textsf{in} \ #3}
+\newcommand{\ldovoid}[2]{\textsf{do} \ #1 \ \textsf{in} \ #2}
+\newcommand{\lunit}[1]{\textsf{unit} \ #1}
+
+\newcommand{\textsfGen}{\textsf{gen}}
+\newcommand{\gen}[3]{\textsfGen(#1,#2,#3)}
+
+\newcommand{\textsfReq}{\textsf{req}}
+\newcommand{\req}[2]{\textsfReq(#1,#2)}
+
+\newcommand{\textsfCall}{\textsf{call}}
+\newcommand{\call}[2]{\textsfCall(#1,#2)}
+
+\newcommand{\textsfRet}{\textsf{ret}}
+\newcommand{\ret}[1]{\textsfRet(#1)}
+
+\newcommand{\textsfCase}{\textsf{case}}
+\newcommand{\textsfOf}{\textsf{of}}
+\newcommand{\case}[2]{\textsfCase ~ #1 ~\textsfOf ~ #2}
+
+\newcommand{\fun}{\rightarrow}
+\newcommand{\funL}[1]{\xrightarrow{#1}}
+\newcommand{\funLC}[2]{\xrightarrow[#2]{#1}}
+\newcommand{\tyenv}{\Gamma}
+\newcommand{\tyenvExt}[2]{\Gamma,#1:#2}
+\newcommand{\tyenvExtWith}[1]{\Gamma,#1}
+\newcommand{\varenv}{\Delta}
+\newcommand{\varenvExt}[1]{\Delta,#1}
+%\newcommand{\typing}[4]{#1\rhd_{#2} #3 : #4}
+\newcommand{\typing}[4]{#1\vdash_{#2} #3 : #4}
+\newcommand{\kinding}[3]{#1\vdash #2 : #3}
+\newcommand{\funtyping}[5]{#1\vdash #4 : #5}     % ;#2, #3
+\newcommand{\codetyping}[4]{#1\vdash_{code} #3 : #4}  % _{#2}
+\newcommand{\polytyping}[5]{#1;#2\vdash_{#3} #4 : #5}
+\newcommand{\conftyping}[2]{\vdash #1 : #2}
+\newcommand{\stacktyping}[3]{\vdash_{#1} #2 : #3}
+\newcommand{\fvtyping}[2]{#1\vdash #2}
+
+\newcommand{\typingBlack}[4]{#1\blacktriangleright_{#2} #3 : #4}
+
+\newcommand{\loceta}[2]{{#1}\rightsquigarrow{#2}}
+
+\newcommand{\enc}{\textsf{enc}}
+\newcommand{\evalStateEncRPCC}[2]{$#1\Downarrow_{\client}^{\enc}#2$}
+\newcommand{\evalStateEncRPCS}[3]{$#1;#2\Downarrow_{\server}^{\enc}#3$}
+
+\newcommand{\sta}{\textsf{state}}
+\newcommand{\evalStatefulRPCC}[3]{\evalStatefulRPC{#1}{#2}{\client}{#3}}
+\newcommand{\evalStatefulRPCS}[3]{\evalStatefulRPC{#1}{#2}{\server}{#3}}
+\newcommand{\evalStatefulRPC}[4]{${#1};{#2}\Downarrow_{#3}^{\sta}{#4}$}
+
+\newcommand{\deep}{\textsf{deep}}
+\newcommand{\evalDeeplyStatefulRPCC}[3]{\evalDeeplyStatefulRPC{#1}{#2}{\client}{#3}}
+\newcommand{\evalDeeplyStatefulRPCS}[3]{\evalDeeplyStatefulRPC{#1}{#2}{\server}{#3}}
+\newcommand{\evalDeeplyStatefulRPC}[4]{${#1};{#2}\Downarrow_{#3}^{\deep}{#4}$}
+
+\newcommand{\IdK}{\textsf{Id}}
+\newcommand{\FunK}[3]{\textsf{Fun} \ #2 \ #3}
+\newcommand{\AppK}[3]{\textsf{App} \ #2 \ #3}
+%\newcommand{\FunK}[3]{\textsf{Fun}^{#1} \ #2 \ #3}
+%\newcommand{\AppK}[3]{\textsf{App}^{#1} \ #2 \ #3}
+
+\newcommand{\reify}[1]{\ulcorner #1 \urcorner}
+
+\newcommand{\RightarrowEnc}{\Rightarrow^{enc}}
+\newcommand{\RightarrowEncStar}{\Rightarrow^{enc*}}
+\newcommand{\RightarrowEncPlus}{\Rightarrow^{enc+}}
+
+\newcommand{\runStateEncRPC}[2]{$#1 \RightarrowEnc #2$}
+\newcommand{\runStateEncRPCStar}[2]{$#1 \RightarrowEncStar #2$}
+\newcommand{\runStateEncRPCPlus}[2]{$#1 \RightarrowEncPlus #2$}
+
+\newcommand{\runStateEncCS}[2]{$#1 \Rightarrow^{enc} #2$}
+\newcommand{\runStateEncCSStar}[2]{$#1 \Rightarrow^{enc*} #2$}
+
+\newcommand{\runStatefulRPC}[2]{$#1 \Rightarrow^{state} #2$}
+\newcommand{\runStatefulRPCStar}[2]{$#1 \Rightarrow^{state*} #2$}
+
+\newcommand{\runStatefulCS}[2]{$#1 \Rightarrow^{state} #2$}
+\newcommand{\runStatefulCSStar}[2]{$#1 \Rightarrow^{state*} #2$}
+
+\newcommand{\emp}{\epsilon}
+\newcommand{\substzsxs}{\{\bar{v}/\bar{z},\overline{w}/\bar{x} \}}
+\newcommand{\substxs}{\{\overline{w}/\bar{x} \}}
+
+\newcommand{\substZsXs}{\{\overline{V}/\bar{z},\overline{W}/\bar{x} \}}
+\newcommand{\substXs}{\{\overline{W}/\bar{x} \}}
+
+\newcommand{\LetK}[2]{\textsf{ctx}\ #1 \ #2}
+%\newcommand{\LetK}[2]{(#1,#2)}
+\newcommand{\opt}[1]{#1_{opt}}
+
+\newcommand{\overlineK}{\overline{K}}
+\newcommand{\overlinePi}{\overline{\Pi}}
+\newcommand{\overlineDelta}{\overline{\Delta}}
+
+%\newcommand{\comp}[1]{\rightsquigarrow_{#1}}
+%\newcommand{\comps}{\rightsquigarrow_{\server}}
+%\newcommand{\compc}{\rightsquigarrow_{\client}}
+% \newcommand{\ccomp}[1]{\mathcal{C}[\![#1]\!]}
+\newcommand{\ccomp}[1]{\mathcal{C}\llbracket#1\rrbracket}
+%\newcommand{\scomp}[1]{S[\![#1]\!]}
+% \newcommand{\vcomp}[1]{\mathcal{V}[\![#1]\!]}
+\newcommand{\vcomp}[1]{\mathcal{V}\llbracket#1\rrbracket}
+%\newcommand{\cconv}[1]{CC[\![#1]\!]}
+%\newcommand{\cconvprg}[1]{CC_{prg}[\![#1]\!]}
+\newcommand{\typeinf}[1]{G[\![#1]\!]}
+
+% \newcommand{\ecomp}[1]{[\![#1]\!]}
+\newcommand{\ecomp}[1]{\llbracket#1\rrbracket}
+
+\newcommand{\FUNS}{\Phi}
+\newcommand{\funstore}{\FUNS}
+\newcommand{\funtype}{\funstore_{type}}
+\newcommand{\funcode}{\funstore}
+\newcommand{\fv}[1]{\textsf{fv}(#1)}
+\newcommand{\dom}[1]{\textsf{dom}(#1)}
+\newcommand{\clo}[2]{clo({#1},{#2})}
+\newcommand{\cloty}[1]{Clo(#1)}
+\newcommand{\valty}[1]{relocatable(#1)}
+
+\newcommand{\Loc}{Loc}
+
+\newcommand{\sessionNothing}{\makebox[0.3cm][c]{\scriptsize $nothing$}}
+\newcommand{\sessionSomething}{\makebox[0.3cm][c]{\scriptsize $session$}}
+\newcommand{\sessionOption}{\makebox[0.3cm][c]{\scriptsize $optSession$}}
+
+\newcommand{\mono}[1]{[\![#1]\!]}
+
+\newcommand{\optrpc}[1]{\mathcal{O}[\![#1]\!]}
+
+\newcommand{\resolve}[2]{\{\!\{#1\}\!\}^{#2}}
+
+\newcommand{\stack}{\Delta}
+\newcommand{\emptystack}{\epsilon}
+
+\newcommand{\conf}{\Sigma}
+\newcommand{\confcs}[2]{\langle #1 | #2 \rangle}
+\newcommand{\stackcsWith}[2]{ #1  |  #2 }
+\newcommand{\stackcs}{\stackcsWith{ \stack_\client }{ \stack_\server }}
+\newcommand{\confuntyped}{\sigma}
+
+\newcommand{\run}{\longrightarrow}
+\newcommand{\runequiv}{\Longrightarrow}
+\newcommand{\structeqv}{\equiv}
+
+\newcommand{\loctyvars}{\overline{l} \ \overline{\alpha}}
+\newcommand{\loctys}{\overline{\Loc}\ \overline{A}}
+
+\newcommand{\CloCodeType}{Ty}
+\newcommand{\CloCode}{Code}
+\newcommand{\OpenCode}{OpenCode}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% Author info
+\title{What is a title?}
+\author{Kwanghoon Choi}
+%\author{Author One$^1$\thanks{Author One was partially supported by Grant XXX} \and Author Two$^2$ \and Author Three$^1$}
+
+\date{
+  Chonnam National University, Gwangju, Republic of Korea
+  \\ \texttt{kwanghoon.choi@jnu.ac.kr}\\[2ex]%
+	%% $^1$Organization 1 \\ \texttt{\{auth1, auth3\}@org1.edu}\\%
+	%% $^2$Organization 2 \\ \texttt{auth3@inst2.edu}\\[2ex]%
+%	\today
+}
+
+\begin{document}
+
+\maketitle
+	
+\begin{abstract}
+This summarizes this paper...
+		
+\noindent\textbf{Keywords:} Location inference, Links, RPC calculus
+\end{abstract}
+
+%\tableofcontents
+	
+\section{Introduction}
+\label{sec:intro}
+	
+%\lipsum[2]
+	
+%% \subsection{Preliminaries}
+%% \label{sec:pre}
+	
+%% \lipsum[3]
+	
+%% \subsection{Previous Results}
+%% \label{sec:prev-results}
+	
+%% Null graphs are discussed in \cite{HararyR74}
+%% The concept of ``internally stable set'' was used in \cite{Berge57, Berge58}.
+	
+%% \begin{theorem}
+%% 	\label{thrm:1}
+%% 	\lipsum[4]
+%% \end{theorem}
+%% \begin{proof}
+%% 	content...
+%% \end{proof}
+
+%% \begin{corollary}
+%% \label{cor:1}
+	
+%% \lipsum[5]
+%% \end{corollary}
+
+%% Unordered List (taken from Overleaf)
+%% \begin{itemize}
+%% 	\item The individual entries are indicated with a black dot, a so-called bullet.
+%% 	\item The text in the entries may be of any length.
+%% \end{itemize}
+
+%% Ordered List (taken from Overleaf)
+%% \begin{enumerate}
+%% 	\item The labels consists of sequential numbers.
+%% 	\item The numbers starts at 1 with every call to the enumerate environment.
+%% \end{enumerate}
+
+%% \begin{table}[ht]
+%% 	\centering
+%% 	\begin{tabular}{|c|c|}
+%% 		\hline
+%% 		\textbf{Odd} & \textbf{Even} \\
+%% 		\hline\hline
+%% 		One & Two \\
+%% 		\hline
+%% 		Three & Four \\
+%% 		\hline
+%% 	\end{tabular}
+%% 	\caption{This is a table}
+%% 	\label{tbl:1}
+%% \end{table}
+
+%% Table~\ref*{tbl:1} is an example of a table.
+	
+%% \section{More Examples}
+%% \label{sec:examples}
+	
+%% 	%% Now we include a figure.
+%% 	%% (See Figure~\ref{fig:example}.)
+%% 	%% \begin{figure}[ht]
+%% 	%% 	\centering
+%% 	%% 	\includegraphics[width=0.3\textwidth]{example}
+%% 	%% 	\caption{An example of a figure}
+%% 	%% 	\label{fig:example}
+%% 	%% \end{figure}
+
+\section{A RPC Calculus for Links}
+\label{sec:linksrpc}
+
+	
+%% \paragraph{Acknowledgements} \lipsum[6]
+	
+%	\newpage
+\bibliography{polyrpc2021}
+	
+\appendix
+	
+\section{The Polymorphic RPC Calculus}
+\label{app:1}
+
+This section reminds the reader of the polymorphic RPC calculus
+\cite{CHOI:scp2020}. It is a polymorphically typed call-by-value
+$\lambda$-calculus with location annotations on $\lambda$-abstractions
+specifying where to run. The calculus offers the notion of polymorphic
+location to write polymorphically located functions succinctly, which
+is convenient for programmers.
+
+\subsection{The Syntax and the Semantics}
+\label{sec:polyrpc:syntax&semantics}
+
+\begin{figure}[t]
+\centering  
+\begin{tabular}{ l  l  r  c  l }
+\multicolumn{5}{l}{\textbf{Syntax}} \\
+ & Location & $a,b$   & $::=$ & $\client \ \ | \  \  \server$ \\
+ &          & $\Loc$  & $::=$  & $a  \ \ |  \ \ l$ \\
+ & Term     & $L,M,N$ & $::=$  & $V  \ | \  L \ M  \ | \  M[A]  \ | \  M[\Loc]  \ | \  (L,M)  \ |  \ \pi_i(M)$ \\
+ & Value & $V,W$ & $::=$ & $x  \ \ |  \ \ \lambda^{Loc} x.M  \ \ |  \ \ \Lambda\alpha.V  \ \ |  \ \ \Lambda l.V \ | \ (V,W)$ \\[\ruleverticalsep]
+\multicolumn{5}{l}{\textbf{Semantics}} \\
+\end{tabular}
+
+\begin{tabular}{p{\rulewidth} }
+  {
+    \begin{prooftree}
+      \infer[left label=(Abs)]0{ \evalRPC{\lamL{b}{x}{M}}{a}{\lamL{b}{x}{M} }}
+    \end{prooftree}
+    \ \ \ 
+    \begin{prooftree}
+      \hypo{ \evalRPC{L}{a}{\lamL{b}{x}{N}} }
+      \hypo{ \evalRPC{M}{a}{W} }
+      \hypo{ \evalRPC{N\subst{W}{x}}{b}{V}  }
+      \infer[left label=(App)]3{ \evalRPC{L \ M}{a}{V}  }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \infer[left label=(Tabs)]0{ \evalRPC{\Lambda\alpha.V}{a}{\Lambda\alpha.V }}
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \evalRPC{M}{a}{\Lambda\alpha.V} }
+      \infer[left label=(Tapp)]1{ \evalRPC{M[B]}{a}{V\subst{B}{\alpha}} }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \infer[left label=(Labs)]0{ \evalRPC{\Lambda l.V}{a}{\Lambda l.V} }
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \evalRPC{M}{a}{\Lambda l.{V}} }
+      \infer[left label=(Lapp)]1{ \evalRPC{M[b]}{a}{V\subst{b}{l}}  }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \evalRPC{L}{a}{V} }
+      \hypo{ \evalRPC{M}{a}{W} }
+      \infer[left label=(Pair)]2{ \evalRPC{(L,M)}{a}{(V,W) }}
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \evalRPC{M}{a}{(V_1,V_2)}  \ \ \ i\in\{1,2\}}
+      \infer[left label=(Proj-i)]1{ \evalRPC{\pi_i(M)}{a}{V_i}  }
+    \end{prooftree}
+  }
+\end{tabular}
+\caption{The polymorphic  RPC calculus \polyrpc}
+\label{fig:polyrpc}
+\end{figure}
+
+Figure \ref{fig:polyrpc} shows the syntax and semantics of the
+polymorphic RPC calculus, {\polyrpc} that allows programmers to use
+the same syntax of $\lambda$-application for both local and remote
+calls, and allows them to compose differently located functions
+arbitrarily.  An important feature is the notion of location variable
+$l$ for which a location constant $a$ can be substituted. A syntactic
+object $\Loc$ is either a location constant or a location variable.
+Assuming the client-server model in the calculus, location constants
+are either $\client$ denoting client or $\server$ denoting server.
+
+In the syntax, $M$ denotes terms, and $V$ denotes values. Every
+$\lambda$-abstraction $\lamL{\Loc}{x}{M}$ has a location annotation of
+$\Loc$. By substituting a location $b$ for a location variable
+annotation, $(\lamL{l}{x}{M})\subst{b}{l}$ becomes a monomorphic
+$\lambda$-abstraction $\lamL{b}{x}{(M\subst{b}{l})}$. This location
+variable is abstracted by the location abstraction construct $\Lambda
+l.V$, and it is instantiated by the location application construct
+$M[\Loc]$. Term applications are denoted by $L \ M$.  The rest of the
+syntax are straightforward.
+
+	The semantics of {\polyrpc} is defined in the style of a big-step operational semantics whose evaluation judgments, $\evalRPC{M}{a}{V}$, denote that a term $M$ evaluates to a value $V$ at location $a$.
+	In the semantics, location annotated $\lambda$-abstractions, type abstractions, and location abstractions are all values. So, (Abs), (Tabs), and (Labs) are straightforwardly defined as an identity evaluation relation over them.
+	(App) defines local calls when $a=b$ and remote calls when $a\not=b$ in the same syntax of lambda applications. The evaluation of an application $L \ M$ at location $a$ performs $\beta$-reduction at location $b$, where a $\lambda$-abstraction $\lamL{b}{x}{N}$ from $L$ has as an annotation, with a value $W$ from $M$, and it continues to evaluate the $\beta$-reduced term $N\subst{W}{x}$, which is a substitution of $W$ for $x$ in $N$, at the same location.
+        The remaining semantics rules are easily understood.
+
+\begin{figure}[t]
+\centering            
+\begin{tabular}{l l r c l}
+\multicolumn{5}{l}{\textbf{Types}} \\
+& Type & $A,B,C$ & $::=$
+& $base  \ \ | \ \  A\funL{Loc}B  \ \ | \ \  \alpha  \ \ | \ \  A \times B  \ \ | \ \  \forall\alpha.A 	\ \ | \ \  \forall l.A $ \\
+& Type environment & $\Gamma$ & $::=$
+& $\emptyset \ \ | \ \ \Gamma, x:A \ \ | \ \ \Gamma, \alpha \ \ | \ \ \Gamma, l$ \\[\ruleverticalsep]
+\multicolumn{5}{l}{\textbf{Typing Rules}} \\
+\end{tabular}
+
+\begin{tabular}{p{\rulewidth}}
+  {
+    \begin{prooftree}
+      \hypo{  \tyenv(x)=A }
+      \infer[left label=(T-Var)]1{ \typing{\tyenv}{\Loc}{x}{A} }
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \typing{\tyenvExt{x}{A}}{\Loc}{M}{B} }
+      %\hypo{ flv(\Loc) \subseteq \Delta  }
+      \infer[left label=(T-Abs)]1{ \typing{\tyenv}{\Loc'}{\lamL{\Loc}{x}{M}}{A\funL{\Loc}B} }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{  \typing{\tyenv}{\Loc}{L}{A\funL{\Loc'}B } }
+      \hypo{  \typing{\tyenv}{\Loc}{M}{A} }
+      %\hypo{  flv{A}\cup flv(\Loc') \subseteq \tyenv  }
+      \infer[left label=(T-App)]2{ \typing{\tyenv}{\Loc}{L \ M}{B}   }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{  \typing{\tyenv,\alpha}{\Loc}{V}{A} }
+      \infer[left label=(T-Tabs)]1{ \typing{\tyenv}{\Loc}{\Lambda\alpha.V}{\forall\alpha.A}   }
+    \end{prooftree}
+    \ \ \
+    \begin{prooftree}
+      \hypo{  \typing{\tyenv}{\Loc}{M}{\forall\alpha.A} }
+      \infer[left label=(T-Tapp)]1{ \typing{\tyenv}{\Loc}{M[B]}{A\subst{B}{\alpha}}   }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \typing{\tyenvExtWith{l}}{\Loc}{V}{A} }
+      %\hypo{ l \not\in flv(\varenv)\cup flv(\tyenv) \cup flv(\Loc) }
+      \infer[left label=(T-Labs)]1{ \typing{\tyenv}{\Loc}{\Lambda l.V}{\forall l.A }}
+    \end{prooftree}
+    \ \ \
+    \begin{prooftree}
+      \hypo{ \typing{\tyenv}{\Loc}{M}{\forall l.A } }
+      % \hypo{ flv(\Loc')\subseteq\tyenv  }
+      \infer[left label=(T-Lapp)]1{ \typing{\tyenv}{\Loc}{M[\Loc']}{A\subst{\Loc'}{l}}}
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \typing{\tyenv}{Loc}{L}{A} }
+      \hypo{ \typing{\tyenv}{Loc}{M}{B} }
+      \infer[left label=(T-Pair)]2{ \typing{\tyenv}{Loc}{(L,M)}{ A \times B }}
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \typing{\tyenv}{Loc}{M}{A_1 \times A_2} \ \ \ i\in\{1,2\} }
+      \infer[left label=(T-Proj-i)]1{ \typing{\tyenv}{Loc}{\pi_i(M)}{ A_i } }
+    \end{prooftree}
+  }
+\end{tabular}
+\caption{A type system for the polymorphic  RPC calculus}
+\label{fig:polyrpctysystem}
+\end{figure}
+
+
+\subsection{The Type System}
+\label{sec:polyrpc:typesystem}
+
+Figure \ref{fig:polyrpctysystem} shows a type system for the
+polymorphic RPC calculus \cite{CHOI:scp2020} that can identify remote
+procedure calls at the type level, supporting location
+polymorphism. The type language allows function types $A \funL{\Loc}
+B$. Then every $\lambda$-abstraction at unknown location gets assigned
+$A\funL{l} B$ using some location variable $l$. A universal quantifier
+over a location variable, $\forall l. A$, is also introduced to allow
+to abstract such occurrences of location variables.
+
+Typing judgments are in the form of $\typing{\tyenv}{\Loc}{M}{A}$,
+saying a term $M$ at location $a$ has type $A$ under a type
+environment $\tyenv$.  The location annotation, $\Loc$, is either a
+location variable or constant.  Typing environments $\tyenv$ have location variables, type
+variables, and types of variables, as $\{l_1,
+\cdots,l_n,\alpha_1,\cdots,\alpha_k, x_1:A_1, \cdots, x_m:A_m\}$.
+They are used to keep track of a set of free location, type, and value
+variables in the context of a given term.
+
+
+The typing rules for the polymorphic RPC calculus are defined as
+follows.  (T-App) is a refinement of the conventional typing rule for
+$\lambda$-applications with respect to the combinations of location
+$\Loc$ (where to evaluate the application) and location $\Loc'$ (where
+to evaluate the function).  
+When $\Loc=\Loc'$, one can statically decide
+that it is a local procedure call.
+Otherwise, $\Loc$ is different from $\Loc'$.
+When both locations are constants as $\Loc=a$ and $\Loc'=b$,
+$L \ M$ is statically found to be a remote procedure call: if
+$a=\client$ and $b=\server$, it is to invoke a server function from
+the client, and if $a=\server$ and $b=\client$, it is to invoke a
+client function from the server.
+When at least one of them is a location variable, we cannot make a decision statically.
+(T-Labs) and (T-Lapp) are similar to the typing rules for type
+abstraction and type application. (T-Labs) checks if its bound
+location variable does not appear in the type environment and in the
+contextual location. (T-Lapp) substitutes $\Loc'$ for all occurrences
+of a location variable $l$ on $\lambda$-abstractions in $M$.
+
+The type soundness of the type system for the polymorphic RPC
+calculus, which was formulated as Theorem \ref{thm:typesoundness} and
+was proved by \cite{CHOI:scp2020}, guarantees that every remote
+procedure call thus identified statically will never change to a local
+procedure call under evaluation. This enables compilers to generate
+call instructions for local calls and network communication for remote
+calls safely even thogh both are in the same syntax of lambda
+applications.
+
+\begin{theorem}[Type soundness for \polyrpc \cite{CHOI:scp2020}] For a  closed term $M$, if \ $\typing{\emptyset}{a}{M}{A}$ and $\evalRPC{M}{a}{V}$, then $\typing{\emptyset}{a}{V}{A}$.
+\label{thm:typesoundness}
+\end{theorem}
+
+	
+%% \lipsum[7]
+	
+\end{document}
