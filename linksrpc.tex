@@ -237,6 +237,9 @@
 \newcommand{\loctycomp}[1]{L\llbracket#1\rrbracket}
 \newcommand{\polytycomp}[1]{T\llbracket#1\rrbracket}
 
+\newcommand{\anncomp}[1]{Ann\llbracket#1\rrbracket}
+\newcommand{\loctmcomp}[1]{\llbracket#1\rrbracket}
+
 
 \newcommand{\FUNS}{\Phi}
 \newcommand{\funstore}{\FUNS}
@@ -788,7 +791,7 @@ where the presence of $\pi_2 \ f[\alpha]$ causes the body of the
 compiled type abstraction to be beyond the form of values.
 
 
-\section{Compiling of {\polyrpc} back into {\linksrpc} extended with GADTs}
+\section{Compiling {\polyrpc} back to {\linksrpc} extended with GADTs}
 \label{sec:compilationwithgadts}
 
 
@@ -812,13 +815,14 @@ where $ClientType$ and $ServerType$ are some types whose
 inhabitants are of no interest.
 
 Accordingly, \linksrpc is assumed to be extended with case analysis
-terms on values as
+terms on values. For brevity, we only consider a special case term for
+the location GADT as
 \[
-\case{M}{Client \rightarrow M_\client; \ Server \rightarrow M_\server}.
+\case{L}{Client \rightarrow M; \ Server \rightarrow N}.
 \]
 %
 For example, one can write $\Lambda\alpha.\lamL{}{x}{\case{x}{Client
-    \rightarrow M_\client; \ Server \rightarrow M_\server}}$ in the
+    \rightarrow M; \ Server \rightarrow N}}$ in the
 extended \linksrpc, and the term can be of type
 $\forall\alpha. \ Location \ \alpha \rightarrow A$ for some type $A$.
 %
@@ -874,6 +878,83 @@ compilation based on the idea explained.
 \end{figure}
 
 %
+
+\begin{figure}[h]
+\centering
+\begin{tabular}{p{\rulewidth}}
+  $\anncomp{a} \ = \ a$
+  \ \ \ 
+  $\anncomp{l} \ = \ (unknown)$
+  \\[\ruleverticalsep]
+%  
+  $\loctmcomp{\client} \ = \ Client$
+  \ \ \ 
+  $\loctmcomp{\server} \ = \ Server$
+  \ \ \ 
+  $\loctmcomp{l} \ = \ x_l$
+  \\[\ruleverticalsep]
+%  
+  $\judgcomp{x}{\tyenv,\Loc,A} \ = \ x$
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{(M,N)}{\tyenv,\Loc,A\times B} \ = \
+  ( \ \judgcomp{M}{\tyenv,\Loc,A} \ , \ \judgcomp{N}{\tyenv,\Loc,B} \ )$
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{\pi_i \ M}{\tyenv,\Loc,A_i} \ = \
+  \pi_i \ (\judgcomp{M}{\tyenv,\Loc,A_1 \times A_2})$
+  \ \ \ (i=1,2)
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{\lamL{\Loc'}{x}{M}}{\tyenv,\Loc,A\funL{\Loc'}B} \ = \
+  \lamL{\anncomp{\Loc'}}{x}{ \ \judgcomp{M}{(\tyenv,x:\polytycomp{A}),\Loc',\polytycomp{B}} }$
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{M \ N}{\tyenv,\Loc,B} \ = \
+  \judgcomp{M}{\tyenv,\Loc,A\funL{\Loc}B} \ \judgcomp{N}{\tyenv,\Loc,A}$
+  \ \ \ (local procedure call)
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{M \ N}{\tyenv,\client,B} \ = \ 
+  \judgcomp{M}{\tyenv,\client,A\funL{\server}B} \ \judgcomp{N}{\tyenv,\client,A}$
+  \ \ \ (remote procedure call)
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{M \ N}{\tyenv,\server,B} \ = \ 
+  \judgcomp{M}{\tyenv,\server,A\funL{\client}B} \ \judgcomp{N}{\tyenv,\server,A}$
+  \ \ \ (remote procedure call)
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{M \ N}{\tyenv,\Loc,B} \ = \
+  if(\loctmcomp{\Loc}, \ if(\loctmcomp{\Loc'},f \ arg, f \ arg), \ if(\loctmcomp{\Loc'},f \ arg, f \ arg))
+  $
+  \\
+  \ \ \ \ \ \ \ \ \ where $f=\judgcomp{M}{\tyenv,\Loc,A\funL{\Loc'}B}$ and $arg=\judgcomp{N}{\tyenv,\Loc,A}$. 
+  \\
+  \ \ \ \ \ \ \ \ \ (local/remote procedure calls after dynamic location checking)
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{\Lambda l.V}{\tyenv,\Loc,\forall l.B} \ = \
+  \Lambda\alpha.\lamL{\anncomp{\Loc}}{\loctmcomp{l}}{ \judgcomp{V}{\tyenv,\Loc,B} }$
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{M \ [\Loc']}{\tyenv,\Loc,B\subst{\Loc'}{l}} \ = \
+  \judgcomp{M}{\tyenv,\Loc,B\subst{\Loc'}{l}} \
+  [ \ \loctycomp{\Loc'}  \ ] \ [ \ \loctmcomp{\Loc'}  \ ]
+  $
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{\Lambda\alpha.V}{\tyenv,\Loc,\forall l.B} \ = \
+  \Lambda\alpha. \judgcomp{V}{\tyenv,\Loc,B}$
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{M \ [A]}{\tyenv,\Loc,B\subst{A}{\alpha}} \ = \
+  \judgcomp{M}{\tyenv,\Loc,\forall\alpha.B} \ [ \ \polytycomp{A} \ ]$
+  \\[\ruleverticalsephalf]
+\end{tabular}
+\caption{A term compilation of \polyrpc into terms in \linksrpc}
+\label{fig:termcompilationback}
+\end{figure}
 
 
 %% \paragraph{Acknowledgements} \lipsum[6]
