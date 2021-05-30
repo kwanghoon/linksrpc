@@ -230,9 +230,13 @@
 % \newcommand{\ecomp}[1]{[\![#1]\!]}
 \newcommand{\ecomp}[1]{\llbracket#1\rrbracket}
 
-\newcommand{\tycomp}[2]{\llbracket#1\rrbracket_{#2}}
+\newcommand{\linkstycomp}[2]{\llbracket#1\rrbracket_{#2}}
 \newcommand{\adjcomp}[4]{#1:#2 \Rightarrow #3:#4}
 \newcommand{\judgcomp}[2]{\llbracket#1\rrbracket_{#2}}
+
+\newcommand{\loctycomp}[1]{L\llbracket#1\rrbracket}
+\newcommand{\polytycomp}[1]{T\llbracket#1\rrbracket}
+
 
 \newcommand{\FUNS}{\Phi}
 \newcommand{\funstore}{\FUNS}
@@ -281,7 +285,7 @@
 
 
 % Author info
-\title{What is a title?}
+\title{On How To Add Static Location Contexts To Links\\(A progress report)}
 \author{Kwanghoon Choi}
 %\author{Author One$^1$\thanks{Author One was partially supported by Grant XXX} \and Author Two$^2$ \and Author Three$^1$}
 
@@ -496,20 +500,20 @@ locations but the argument function type is also annotated with it.
 
 
 %
-This idea can be formulated as a type translation $\tycomp{A}{\Loc} = B$:
+This idea can be formulated as a type translation $\linkstycomp{A}{\Loc} = B$:
 
 \begin{figure}[h]
 \centering
 \begin{tabular}{l l l l l l l l l l l l l l}
-$\tycomp{\alpha}{\Loc}$ & $=$ & $\alpha$
+$\linkstycomp{\alpha}{\Loc}$ & $=$ & $\alpha$
 &
-$\tycomp{A \funL{} B}{\Loc}$ & $=$ & $\tycomp{A}{\Loc} \funL{Loc} \tycomp{B}{\Loc}$
+$\linkstycomp{A \funL{} B}{\Loc}$ & $=$ & $\linkstycomp{A}{\Loc} \funL{Loc} \linkstycomp{B}{\Loc}$
 \\
-$\tycomp{base}{\Loc}$ & $=$ & $base$
+$\linkstycomp{base}{\Loc}$ & $=$ & $base$
 &
-$\tycomp{A\times B}{\Loc}$ & $=$ & $\tycomp{A}{\Loc}\times \tycomp{B}{\Loc}$
+$\linkstycomp{A\times B}{\Loc}$ & $=$ & $\linkstycomp{A}{\Loc}\times \linkstycomp{B}{\Loc}$
 &
-$\tycomp{\forall\alpha.A}{\Loc}$ & $=$ & $\forall\alpha.\tycomp{A}{\Loc}$
+$\linkstycomp{\forall\alpha.A}{\Loc}$ & $=$ & $\forall\alpha.\linkstycomp{A}{\Loc}$
 \\
 \end{tabular}
 \caption{A type compilation of \linksrpc into \polyrpc}
@@ -517,9 +521,9 @@ $\tycomp{\forall\alpha.A}{\Loc}$ & $=$ & $\forall\alpha.\tycomp{A}{\Loc}$
 \end{figure}
 
 Note that the explained client map function type in \polyrpc is
-obtained from $\tycomp{(Int \rightarrow Int) \rightarrow [Int] \rightarrow
+obtained from $\linkstycomp{(Int \rightarrow Int) \rightarrow [Int] \rightarrow
   [Int]}{\client}$ by extending it over list types as
-$\tycomp{[A]}{\Loc} = [ \tycomp{A}{\Loc} ]$ in a straightforward way.
+$\linkstycomp{[A]}{\Loc} = [ \linkstycomp{A}{\Loc} ]$ in a straightforward way.
 
 Obviously, this heurisitc is not always satisfactory.
 %
@@ -623,30 +627,30 @@ into \polyrpc as shown in Figure \ref{fig:compilationoflinksrpc}.
   \\[\ruleverticalsep]
 %  
   $\judgcomp{ \typing{\tyenv}{}{\lamL{a}{x}{M}}{A \rightarrow B} }{\Delta,\Loc}$ & $=$
-  & let $\typing{\Delta,x:\tycomp{A}{a}}{a}{M'}{D}$
-    \ = \ $\judgcomp{ \typing{\tyenvExt{x}{A}}{}{M}{B} }{(\Delta,x:\tycomp{A}{a}),a}$
+  & let $\typing{\Delta,x:\linkstycomp{A}{a}}{a}{M'}{D}$
+    \ = \ $\judgcomp{ \typing{\tyenvExt{x}{A}}{}{M}{B} }{(\Delta,x:\linkstycomp{A}{a}),a}$
   \\[\ruleverticalsephalf]
   &
-  & $\typing{\Delta}{\Loc}{\lamL{a}{x}{M'}}{\tycomp{A}{a} \funL{a} D}$
+  & $\typing{\Delta}{\Loc}{\lamL{a}{x}{M'}}{\linkstycomp{A}{a} \funL{a} D}$
   \\[\ruleverticalsep]
 %  
   $\judgcomp{ \typing{\tyenv}{}{\lamL{}{x}{M}}{A \rightarrow B} }{\Delta,\Loc}$ & $=$
   & let $l$ be fresh
   \\
   &
-  & let $\typing{\Delta,l,x:\tycomp{A}{l}}{l}{M'}{D}$
-    \ = \ $\judgcomp{ \typing{\tyenvExt{x}{A}}{}{M}{B} }{(\Delta,l,x:\tycomp{A}{l}),l}$
+  & let $\typing{\Delta,l,x:\linkstycomp{A}{l}}{l}{M'}{D}$
+    \ = \ $\judgcomp{ \typing{\tyenvExt{x}{A}}{}{M}{B} }{(\Delta,l,x:\linkstycomp{A}{l}),l}$
   \\[\ruleverticalsephalf]
   &
   & {
       \begin{prooftree}
         \hypo{
           \begin{prooftree}
-            \hypo{ \typing{\Delta,l}{\Loc}{\lamL{l}{x}{M'} }{ \tycomp{A}{l}\funL{l}D } }
-            \infer1{ \typing{\Delta}{\Loc}{\Lambda l.\lamL{l}{x}{M'} }{ \forall l.(\tycomp{A}{l}\funL{l}D) } }
+            \hypo{ \typing{\Delta,l}{\Loc}{\lamL{l}{x}{M'} }{ \linkstycomp{A}{l}\funL{l}D } }
+            \infer1{ \typing{\Delta}{\Loc}{\Lambda l.\lamL{l}{x}{M'} }{ \forall l.(\linkstycomp{A}{l}\funL{l}D) } }
           \end{prooftree}
         }
-        \infer1{ \typing{\Delta}{\Loc}{(\Lambda l.\lamL{l}{x}{M'})[\Loc] }{ (\tycomp{A}{l}\funL{l}D)\subst{\Loc}{l}} }
+        \infer1{ \typing{\Delta}{\Loc}{(\Lambda l.\lamL{l}{x}{M'})[\Loc] }{ (\linkstycomp{A}{l}\funL{l}D)\subst{\Loc}{l}} }
       \end{prooftree}
     }
   
@@ -696,7 +700,7 @@ into \polyrpc as shown in Figure \ref{fig:compilationoflinksrpc}.
     \ = \ $\judgcomp{ \typing{\tyenv}{}{M}{\forall\alpha.A} }{\Delta,\Loc}$
   \\[\ruleverticalsephalf]
   &
-  & $\typing{\Delta}{\Loc}{M'[ \ \tycomp{B}{\Loc} \ ]}{C\subst{ \tycomp{B}{\Loc} }{\alpha}}$
+  & $\typing{\Delta}{\Loc}{M'[ \ \linkstycomp{B}{\Loc} \ ]}{C\subst{ \linkstycomp{B}{\Loc} }{\alpha}}$
   \\[\ruleverticalsep]
 \end{tabular}
 \caption{A compilation of \linksrpc into \polyrpc}
@@ -736,10 +740,10 @@ the $\lambda$-abstractions.
 Note that compiling $\lamL{?a}{x}{M}$ of type $A \rightarrow B$ at a
 locational context $\Loc$ extends the current type environment with a
 type binding of $x$ and a heuristically compiled argument type, that
-is, $\tycomp{A}{a}$ or $\tycomp{A}{l}$ for some fresh location
+is, $\linkstycomp{A}{a}$ or $\linkstycomp{A}{l}$ for some fresh location
 variable.
 
-\subsection{Problem: Violating the Syntactic Restriction of Polymorphism}
+\subsection{Problem: Violating Syntactic Restriction on Polymorphism}
 
 %
 We have a problem in the formulation of the compilation of \linksrpc
@@ -781,12 +785,93 @@ Otherwise, it seems only to have
         {\forall\alpha.(\alpha\funL{\server}\alpha\times Int)}
 \]
 where the presence of $\pi_2 \ f[\alpha]$ causes the body of the
-compiled type abstraction not to be in the form of values any more.
+compiled type abstraction to be beyond the form of values.
 
 
 \section{Compiling of {\polyrpc} back into {\linksrpc} extended with GADTs}
 \label{sec:compilationwithgadts}
 
+
+%
+Now we study how to compile \polyrpc terms back to \linksrpc terms.
+%
+For this, the presence of the notion of location in \polyrpc should be
+encoded in \linksrpc terms.
+%
+GADTs can be used to encode locations as was discussed in
+\cite{CHOI:scp2020}.
+
+%
+For the compilation, a GADT, $Location \ \alpha$, is introduced to
+\linksrpc to have two data constructors, $Client $ and $Server$:
+\begin{itemize}
+  \item $Client \ \ : \ \ Location \ ClientType$
+  \item $Server \ \ : \ \ Location \ ServerType$
+\end{itemize}
+where $ClientType$ and $ServerType$ are some types whose
+inhabitants are of no interest.
+
+Accordingly, \linksrpc is assumed to be extended with case analysis
+terms on values as
+\[
+\case{M}{Client \rightarrow M_\client; \ Server \rightarrow M_\server}.
+\]
+%
+For example, one can write $\Lambda\alpha.\lamL{}{x}{\case{x}{Client
+    \rightarrow M_\client; \ Server \rightarrow M_\server}}$ in the
+extended \linksrpc, and the term can be of type
+$\forall\alpha. \ Location \ \alpha \rightarrow A$ for some type $A$.
+%
+This term can be applied as $(\cdots) \ [ClientType] \ Client$ or as
+$(\cdots) \ [ServerType] \ Server$.
+
+%
+Using this way of encoding locations, the compilation of locations in
+\polyrpc into types in \linksrpc can be defined as Figure
+\ref{fig:locationcompilationback}.
+
+\begin{figure}[h]
+\centering
+\begin{tabular}{l l l }
+$\loctycomp{\client} \ = \ ClientType$ &
+$\loctycomp{\server} \ = \ ServerType$ &
+$\loctycomp{l} \ = \ Location \ \alpha_l$
+\\
+\end{tabular}
+\caption{A location compilation of \polyrpc into types in \linksrpc}
+\label{fig:locationcompilationback}
+\end{figure}
+
+
+%
+For compiling back, a reverse of the type compilation that uses a
+heuristic to introduce locations to function types is required.
+%
+This time the reverse type compilation would erase locations annotated
+to function types.
+%
+Also, location abstractions $\forall l. A$, which is not expressible in
+\linksrpc, would be replaced by a combination of type abstractions and
+function types $\forall\alpha_l. Location \ \alpha_l \rightarrow A$.
+%
+
+Figure \ref{fig:typecompilationback} defines a reverse type
+compilation based on the idea explained.
+
+\begin{figure}[h]
+\centering
+\begin{tabular}{l l l}
+  $\polytycomp{\alpha} \ = \ \alpha$ &
+  $\polytycomp{base} \ = \ base$ &
+  $\polytycomp{A \funL{\Loc} B} \ = \ \polytycomp{A} \rightarrow \polytycomp{B}$
+  \\
+  $\polytycomp{\forall\alpha.A} \ = \ \forall\alpha.\polytycomp{A}$ &
+  $\polytycomp{\forall l.A} \ = \ \forall\alpha_l.Location \ \alpha_l \rightarrow \polytycomp{A}$ 
+\\
+\end{tabular}
+\caption{A type compilation of \polyrpc into types in \linksrpc}
+\label{fig:typecompilationback}
+\end{figure}
 
 %
 
