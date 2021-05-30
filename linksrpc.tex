@@ -318,8 +318,7 @@ The limitation is caused by a technical problem involving polymorphic
 constructs in the adjustment of locations to resolve the location
 discrepancies resulting from our heuristic type compilation.
 %
-%
-We will continue to study to be able to apply the whole of the
+We will continue to study to extend the applicability to the whole
 calculus by solving this problem.
 
 \noindent\textbf{Keywords:} Location inference, Links, RPC calculus
@@ -330,7 +329,22 @@ calculus by solving this problem.
 \section{Introduction}
 \label{sec:intro}
 
-A motivation is ...
+A motivation is this.
+%
+The feature of location types would be good for providing multi-tier
+programming languages like Links static location contexts useful for
+optimization of local computation and statically checking location
+inconsistencies.
+%
+However, a naive integration of this feature in Links should be
+challenging because several advanced features have been developed and
+they might require to be changed in a significant way.
+%
+As an alternative to this direction, we study a way to recover static
+location contexts in Links in the hope of no change or, if there is
+any, minimal changes that do not impact the language system of Links.
+
+
 
 Figure~\ref{fig:addingstaticlocationcontexts}.
 \begin{figure}[ht]
