@@ -288,7 +288,7 @@
 
 
 % Author info
-\title{On Adding Static Location Contexts To Links\\(A progress report)}
+\title{On Recovering Static Location Contexts in Links\\(A progress report)}
 \author{Kwanghoon Choi}
 %\author{Author One$^1$\thanks{Author One was partially supported by Grant XXX} \and Author Two$^2$ \and Author Three$^1$}
 
@@ -305,8 +305,23 @@
 \maketitle
 	
 \begin{abstract}
-This summarizes this paper...
-		
+%
+This progress report describes an attempt to recover static location
+contexts in the Links-RPC calculus, which represents the RPC aspect of
+Links, by compiling to the polymorphic RPC calculus and back to
+itself.
+%  
+Currently, the proposed idea is limited to the rank-1 subset of the
+Links-RPC calculus.
+%
+The limitation is caused by a technical problem involving polymorphic
+constructs in the adjustment of locations to resolve the location
+discrepancies resulting from our heuristic type compilation.
+%
+%
+We will continue to study to be able to apply the whole of the
+calculus by solving this problem.
+
 \noindent\textbf{Keywords:} Location inference, Links, RPC calculus
 \end{abstract}
 
@@ -317,11 +332,12 @@ This summarizes this paper...
 
 A motivation is ...
 
-Figure~\ref{fig:addingstaticlocationcontexts}.)
+Figure~\ref{fig:addingstaticlocationcontexts}.
 \begin{figure}[ht]
         \centering
-        \includegraphics[width=0.5\textwidth]{linksrpc.png}
-        \caption{Adding Static Location Contexts to Links by Compiling \linksrpc to \polyrpc and back}
+        \includegraphics[width=0.6\textwidth]{linksrpc.png}
+        \caption{Recovering static location contexts by compiling
+          to the polymorphic RPC calculus and back}
         \label{fig:addingstaticlocationcontexts}
 \end{figure}
 
@@ -386,12 +402,16 @@ Figure~\ref{fig:addingstaticlocationcontexts}.)
 \section{A Links-RPC Calculus}
 \label{sec:linksrpc}
 
-This section describes a RPC calculus that extends with unannotated
+This section describes a RPC calculus that extends the RPC calculus
+\cite{Cooper:2009:RC:1599410.1599439} with unannotated
 $\lambda$-abstractions whose location is not specified.
 %
 The extended RPC calculus intends to capture the RPC feature of the
 Links programming language \cite{Cooper:2006:LWP:1777707.1777724} in a
 simple way.
+%
+For our setting, the calculus is also extended with type abstractions
+and applications.
 %
 Let us call it a Links-RPC calculus, \linksrpc.
 
@@ -1035,9 +1055,10 @@ term variables as explained previously.
 \label{sec:conclusion}
 
 %
-This progress report describes an attempt to add static location
-contexts to the Links-like calculus \linksrpc by compiling it to
-\polyrpc and back to itself.
+This progress report describes an attempt to recover static location
+contexts in the Links-RPC calculus, which represents the RPC aspect of
+Links, by compiling to the polymorphic RPC calculus and back to
+itself.
 
 %
 We have identified a technical problem involving polymorphic
