@@ -288,7 +288,7 @@
 
 
 % Author info
-\title{On How To Add Static Location Contexts To Links\\(A progress report)}
+\title{On Adding Static Location Contexts To Links\\(A progress report)}
 \author{Kwanghoon Choi}
 %\author{Author One$^1$\thanks{Author One was partially supported by Grant XXX} \and Author Two$^2$ \and Author Three$^1$}
 
@@ -878,14 +878,78 @@ compilation based on the idea explained.
 \end{figure}
 
 %
+Figure \ref{fig:termcompilationback} shows a term compilation of
+\polyrpc into \linksrpc.
+%
+There are three things to note.
+%
+First, the definition uses location representation by values.
+%
+The representation method is defined by the compilation of locations
+into terms $\loctmcomp{\Loc}=V$.
+%
+The client location $\client$ is represented by the data constructor
+$Client$ while $\server$ is so by $Server$.
+%
+Note that the representation method is reminiscent of one used in the
+compilation of the polymorphic CS calculus into the untyped CS
+\cite{cclr2021}.
 
-\begin{figure}[h]
+%
+Second, location abstractions are represented actually by
+$\lambda$-abstractions guarded by type abstractions to introduce a
+type variable for a parameter of the type $Location \alpha$ of the
+$\lambda$-variable.
+%
+For example,
+\[
+\Lambda l.\lamL{l}{f}{f \ 42}
+\]
+would be compiled to
+\[
+\Lambda\alpha.\lamL{\client}{y_l}{\lamL{}{f}{f \ 42}}
+\]
+where the type of
+$y_l$ is $Location \ \alpha$.
+%
+Then an application term in \polyrpc 
+\[
+(\Lambda l.\lamL{l}{f}{f \ 42}) \ [\client]
+\]
+would be a term in \linksrpc
+\[
+(\Lambda\alpha.\lamL{\client}{y_l}{\lamL{}{f}{f \ 42}}) \ [ClientType]
+\ Client
+\]
+where the type of $y_l$ is $Location \ ClientType$.
+%
+After applying it to the client location value $Client$, this location
+can be examined through the value bound to $y_l$ in runtime.
+
+%
+Third, there are four compilation rules for application terms in
+\polyrpc.
+%
+The first three rules for application terms provides static location
+contexts.
+%
+In the static location contexts, there is no need to check the
+location of functions to invoke by the runtime system for \linksrpc,
+though our compilation rules have not expressed this by using
+different syntactic terms such as $V(W)$ for local procedure calls and
+$\req{V}{W}$ and $\call{V}{W}$ for remote procedure calls as in the
+Client-Server calculus \cite{cclr2021}.
+%
+The last rule for application terms is about dynamic location contexts
+where location information is provided by two variables (or one
+constant and one variable) $\loctmcomp{\Loc}$ and $\loctmcomp{\Loc'}$
+that represent the location of the application term and the location
+of its function, respectively.
+
+
+\begin{figure}[t]
 \centering
 \begin{tabular}{p{\rulewidth}}
-  $\anncomp{a} \ = \ a$
-  \ \ \ 
-  $\anncomp{l} \ = \ (unknown)$
-  \\[\ruleverticalsep]
 %  
   $\loctmcomp{\client} \ = \ Client$
   \ \ \ 
@@ -935,7 +999,7 @@ compilation based on the idea explained.
   \\[\ruleverticalsephalf]
 %  
   $\judgcomp{\Lambda l.V}{\tyenv,\Loc,\forall l.B} \ = \
-  \Lambda\alpha.\lamL{\anncomp{\Loc}}{\loctmcomp{l}}{ \judgcomp{V}{\tyenv,\Loc,B} }$
+  \Lambda\alpha.\lamL{}{\loctmcomp{l}}{ \judgcomp{V}{\tyenv,\Loc,B} }$
   \\[\ruleverticalsephalf]
 %  
   $\judgcomp{M \ [\Loc']}{\tyenv,\Loc,B\subst{\Loc'}{l}} \ = \
@@ -950,12 +1014,30 @@ compilation based on the idea explained.
 %  
   $\judgcomp{M \ [A]}{\tyenv,\Loc,B\subst{A}{\alpha}} \ = \
   \judgcomp{M}{\tyenv,\Loc,\forall\alpha.B} \ [ \ \polytycomp{A} \ ]$
-  \\[\ruleverticalsephalf]
+  \\[\ruleverticalsep]
+  $\anncomp{a} \ = \ a$
+  \ \ \ 
+  $\anncomp{l} \ = \ (unknown)$
+  \\
 \end{tabular}
 \caption{A term compilation of \polyrpc into terms in \linksrpc}
 \label{fig:termcompilationback}
 \end{figure}
 
+\section{Conclusion}
+\label{sec:conclusion}
+
+%
+This progress report describes an attempt to add static location
+contexts to the Links-like calculus \linksrpc by compiling it to
+\polyrpc and back to itself.
+
+%
+We have identified a technical problem involving polymorphic
+constructs in the adjustment of locations to resolve the location
+discrepancies resulting from our heuristic type compilation.
+%
+We will continue to study to solve this problem. 
 
 %% \paragraph{Acknowledgements} \lipsum[6]
 	
