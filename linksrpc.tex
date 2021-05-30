@@ -61,6 +61,7 @@
 
 %%% ebproof column width
 \newcommand{\rulewidth}{.8\linewidth}
+\newcommand{\ruleverticalsephalf}{0.25cm}
 \newcommand{\ruleverticalsep}{0.5cm}
 
 \usepackage{graphicx, color}
@@ -231,7 +232,7 @@
 
 \newcommand{\tycomp}[2]{\llbracket#1\rrbracket_{#2}}
 \newcommand{\adjcomp}[4]{#1:#2 \Rightarrow #3:#4}
-
+\newcommand{\judgcomp}[2]{\llbracket#1\rrbracket_{#2}}
 
 \newcommand{\FUNS}{\Phi}
 \newcommand{\funstore}{\FUNS}
@@ -451,6 +452,8 @@ locations are disregarded by types.
 \end{prooftree}
 \]
 
+For brevity, we omit writing the full definitions of the semantics and
+the typing rules for \linksrpc.
 
 \section{Compiling \linksrpc into \polyrpc}
 \label{sec:translationtopolyrpc}
@@ -605,18 +608,188 @@ producing the adjusted term, $\lamL{\client}{x}{f \ x}$.
 
 Based on the heuristic type compilation with the type-directed
 location adjustment, we can define the compilation rules of \linksrpc
-into \polyrpc.
+into \polyrpc as shown in Figure \ref{fig:compilationoflinksrpc}.
 
 \begin{figure}[h]
 \centering
-\begin{tabular}{p{\linewidth}}
+\begin{tabular}{l c p{\rulewidth}}
+  $\judgcomp{ \typing{\tyenv}{}{x}{A} }{\Delta,\Loc}$ & $=$
+  & {
+      \begin{prooftree}
+        \hypo{ x:B \in \Delta }
+        \infer1{ \typing{\Delta}{\Loc}{x}{B} }
+      \end{prooftree}
+    }
+  \\[\ruleverticalsep]
+%  
+  $\judgcomp{ \typing{\tyenv}{}{\lamL{a}{x}{M}}{A \rightarrow B} }{\Delta,\Loc}$ & $=$
+  & let $\typing{\Delta,x:\tycomp{A}{a}}{a}{M'}{D}$
+    \ = \ $\judgcomp{ \typing{\tyenvExt{x}{A}}{}{M}{B} }{(\Delta,x:\tycomp{A}{a}),a}$
+  \\[\ruleverticalsephalf]
+  &
+  & $\typing{\Delta}{\Loc}{\lamL{a}{x}{M'}}{\tycomp{A}{a} \funL{a} D}$
+  \\[\ruleverticalsep]
+%  
+  $\judgcomp{ \typing{\tyenv}{}{\lamL{}{x}{M}}{A \rightarrow B} }{\Delta,\Loc}$ & $=$
+  & let $l$ be fresh
+  \\
+  &
+  & let $\typing{\Delta,l,x:\tycomp{A}{l}}{l}{M'}{D}$
+    \ = \ $\judgcomp{ \typing{\tyenvExt{x}{A}}{}{M}{B} }{(\Delta,l,x:\tycomp{A}{l}),l}$
+  \\[\ruleverticalsephalf]
+  &
+  & {
+      \begin{prooftree}
+        \hypo{
+          \begin{prooftree}
+            \hypo{ \typing{\Delta,l}{\Loc}{\lamL{l}{x}{M'} }{ \tycomp{A}{l}\funL{l}D } }
+            \infer1{ \typing{\Delta}{\Loc}{\Lambda l.\lamL{l}{x}{M'} }{ \forall l.(\tycomp{A}{l}\funL{l}D) } }
+          \end{prooftree}
+        }
+        \infer1{ \typing{\Delta}{\Loc}{(\Lambda l.\lamL{l}{x}{M'})[\Loc] }{ (\tycomp{A}{l}\funL{l}D)\subst{\Loc}{l}} }
+      \end{prooftree}
+    }
+  
+  \\[\ruleverticalsephalf]
+%  
+  $\judgcomp{ \typing{\tyenv}{}{M \ N }{B} }{\Delta,\Loc}$ & $=$
+  & let $\typing{\Delta}{\Loc}{M'}{C \funL{\Loc'} D}$
+    \ = \ $\judgcomp{ \typing{\tyenv}{}{M}{A \rightarrow B} }{\Delta,\Loc}$
+  \\[\ruleverticalsephalf]
+  &
+  & let $\typing{\Delta}{\Loc}{N_0'}{C_0}$
+    \ = \ $\judgcomp{ \typing{\tyenv}{}{N}{A} }{\Delta,\Loc}$
+  \\[\ruleverticalsephalf]
+  &
+  & let $\adjcomp{N_0'}{C_0}{N'}{C}$
+  \\[\ruleverticalsephalf]
+  &
+  & $\typing{\Delta}{\Loc}{M' \ N'}{D}$
+  \\[\ruleverticalsep]
+%  
+  $\judgcomp{ \typing{\tyenv}{}{(M_1,M_2)}{A_1\times A_2} }{\Delta,\Loc}$ & $=$
+  & let $\typing{\Delta}{\Loc}{M_i'}{A_i'}$
+    \ = \ $\judgcomp{ \typing{\tyenv}{}{M_i}{A_i} }{\Delta,\Loc}$ for $i=1,2$
+  \\[\ruleverticalsephalf]
+  &
+  & $\typing{\Delta}{\Loc}{(M_1',M_2')}{(A_1' \times A_2')}$
+  \\[\ruleverticalsep]
+%  
+  $\judgcomp{ \typing{\tyenv}{}{\pi_i M}{A_i} }{\Delta,\Loc}$ & $=$
+  & let $\typing{\Delta}{\Loc}{M'}{A_1' \times A_2'}$
+    \ = \ $\judgcomp{ \typing{\tyenv}{}{M}{A_1\times A_2} }{\Delta,\Loc}$
+  \\[\ruleverticalsephalf]
+  &
+  & $\typing{\Delta}{\Loc}{\pi_i \ M'}{A_i'}$
+  \\[\ruleverticalsep]
+%  
+  $\judgcomp{ \typing{\tyenv}{}{\Lambda\alpha.V}{\forall\alpha.A} }{\Delta,\Loc}$ & $=$
+  & let $\typing{\Delta,\alpha}{\Loc}{V'}{A'}$
+    \ = \ $\judgcomp{ \typing{\tyenv,\alpha}{}{V}{A} }{(\Delta,\alpha),\Loc}$
+  \\[\ruleverticalsephalf]
+  &
+  & $\typing{\Delta}{\Loc}{\Lambda\alpha.V'}{\forall\alpha.A'}$
+  \\[\ruleverticalsep]
+%  
+  $\judgcomp{ \typing{\tyenv}{}{M \ [B]}{A\subst{B}{\alpha}} }{\Delta,\Loc}$ & $=$
+  & let $\typing{\Delta}{\Loc}{M'}{\forall\alpha.C}$
+    \ = \ $\judgcomp{ \typing{\tyenv}{}{M}{\forall\alpha.A} }{\Delta,\Loc}$
+  \\[\ruleverticalsephalf]
+  &
+  & $\typing{\Delta}{\Loc}{M'[ \ \tycomp{B}{\Loc} \ ]}{C\subst{ \tycomp{B}{\Loc} }{\alpha}}$
+  \\[\ruleverticalsep]
 \end{tabular}
 \caption{A compilation of \linksrpc into \polyrpc}
 \label{fig:compilationoflinksrpc}
 \end{figure}
 
+
+%
+Basically, the compilation rules forms a transformation
+$\judgcomp{\mathcal{D}}{\Delta,\Loc}=\mathcal{D'}$ of typing derivations
+$\mathcal{D}$ in \linksrpc into those $\mathcal{D'}$ in \polyrpc.
+%
+Additionally, as contextual information in \polyrpc, the
+compilation method is defined to take a type environment $\Delta$ and a
+location $\Loc$.
+%
+The type environment $\Delta$ provides how types for free variables in
+\linksrpc are heuristically compiled depending on locational contexts.
+%
+The location $\Loc$ informs where terms being compiled are.
+
+
+%
+One of the most important compilation rules is for $\lambda$-applications $M
+\ N$.
+%
+After $M$ and $N$ are compiled into $M'$ and $N_0'$, the compiled
+argument term is adjusted to the argument type of the compiled
+functional term.
+
+%
+Unannotated $\lambda$-abstractions are compiled into location
+abstractions that are subsequently instantiated with the location of
+the $\lambda$-abstractions.
+
+%
+Note that compiling $\lamL{?a}{x}{M}$ of type $A \rightarrow B$ at a
+locational context $\Loc$ extends the current type environment with a
+type binding of $x$ and a heuristically compiled argument type, that
+is, $\tycomp{A}{a}$ or $\tycomp{A}{l}$ for some fresh location
+variable.
+
+\subsection{Problem: Violating the Syntactic Restriction of Polymorphism}
+
+%
+We have a problem in the formulation of the compilation of \linksrpc
+into \polyrpc.
+%
+Recall that type and location abstractions are defined in the form as
+$\Lambda\alpha.V$ and $\Lambda l.V$ where the bodies are in the form
+of values.
+%
+The compilation of arbitrary ranked \linksrpc terms could produce
+\polyrpc terms that violate this syntactic restriction.
+%
+For those \linksrpc terms of polymorphic types under the rank-1
+polymorphism, often called the Hindley-Milner style polymorphism, the
+proposed compilation rules will always produce legitimate terms
+keeping the polymorphic restriction in syntax.
+
+%
+The cause of the problem is that the eta-conversion of type and
+location abstractions leads to type and location applications in their
+bodies.
+%
+Let us explain the cause by example.
+%
+It is legitimate to have an adjustment as
+\[
+\adjcomp{\Lambda\alpha.(\lamL{\client}{x}{x}, 42)}
+        {\forall\alpha.(\alpha\funL{\client}\alpha\times Int) \ \ }
+        {\ \ \Lambda\alpha.(\lamL{\server}{x}{x}, 42)}
+        {\forall\alpha.(\alpha\funL{\server}\alpha\times Int)}
+\]
+when the body of the type abstraction is known.
+%
+Otherwise, it seems only to have
+\[
+\adjcomp{f}
+        {\forall\alpha.(\alpha\funL{\client}\alpha\times Int) \ \ }
+        {\ \ \Lambda\alpha.(\lamL{\server}{y}{ (\pi_1 \ f[\alpha]) \ y}, \ \pi_2 \ f[\alpha])}
+        {\forall\alpha.(\alpha\funL{\server}\alpha\times Int)}
+\]
+where the presence of $\pi_2 \ f[\alpha]$ causes the body of the
+compiled type abstraction not to be in the form of values any more.
+
+
 \section{Compiling of {\polyrpc} back into {\linksrpc} extended with GADTs}
 \label{sec:compilationwithgadts}
+
+
+%
+
 
 %% \paragraph{Acknowledgements} \lipsum[6]
 	
@@ -642,7 +815,7 @@ programmers.
 \subsection{The Syntax and the Semantics}
 \label{sec:polyrpc:syntax&semantics}
 
-\begin{figure}[t]
+\begin{figure}[h]
 \centering  
 \begin{tabular}{ l  l  r  c  l }
 \multicolumn{5}{l}{\textbf{Syntax}} \\
@@ -759,7 +932,7 @@ same location.
 %
 The remaining semantics rules are easily understood.
 
-\begin{figure}[t]
+\begin{figure}[h]
 \centering            
 \begin{tabular}{l l r c l}
 \multicolumn{5}{l}{\textbf{Types}} \\
