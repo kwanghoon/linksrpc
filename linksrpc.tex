@@ -331,22 +331,29 @@ calculus by solving this problem.
 
 A motivation is this.
 %
-The feature of location types would be good for providing multi-tier
-programming languages like Links static location contexts useful for
-optimization of local computation and statically checking location
-inconsistencies.
+The feature of location types would be good for multi-tier programming
+languages like Links in local computation optimization and static
+location inconsistency checking.
+
+%
+% Examples to explain the two benefits.
+
 %
 However, a naive integration of this feature in Links should be
-challenging because several advanced features have been developed and
-they might require to be changed in a significant way.
+challenging because there might be a need to change several advanced
+features in a significant way.
 %
-As an alternative to this direction, we study a way to recover static
-location contexts in Links in the hope of no change or, if there is
-any, minimal changes that do not impact the language system of Links.
+An alternative direction would pursue a way to recover static location
+contexts in Links equally useful for the aforementioned benefits but
+in the hope of no change or minimal changes that do not affect the
+Links language system so much.
 
+Figure~\ref{fig:addingstaticlocationcontexts} shows a general
+methodology to approach this alternative direction by analyzing static
+location contexts via compiling to the polymorphic RPC calculus and
+then by representing the analyzed context information in Links via
+compiling back.
 
-
-Figure~\ref{fig:addingstaticlocationcontexts}.
 \begin{figure}[ht]
         \centering
         \includegraphics[width=0.6\textwidth]{linksrpc.png}
@@ -355,46 +362,152 @@ Figure~\ref{fig:addingstaticlocationcontexts}.
         \label{fig:addingstaticlocationcontexts}
 \end{figure}
 
+%
+Let us discuss location inference and representation by compiling to
+the polymorphic RPC calculus and subsequently compiling back.
+%
+In Links, a client map function would be written as follows.
+%
+
+\begin{lstlisting}
+  sig map : (a -> b, [a]) -> [b]
+  fun map(f, xs) client {
+    switch( xs ) {
+      case [] -> []
+      case y::ys -> f(y) :: map (f, ys)
+    }
+  }
+\end{lstlisting}
+
+%
+As seen in the example, having a client location annotation enforces
+the map function to run at the client, but the location information is
+disregarded by types.
+%
+Programmers may view the argument type as a client function type of $a
+\rightarrow b$ but the client map function could be applied to a
+server function of the same type.
+%
+Therefore, the implementation of $f(y)$ should always check the
+location of the function $f$ before its application to $y$.
+
+%
+A heuristic could be adopted to reflect the programmer's view by the
+presence of the client location annotation to all function types
+occurring in the map function types.
+%
+The following signature, though Links does not allow to write such a
+function type, describes the idea of this interpretation where
+functions of type $a \funL{client} b$ is guaranteed to run in the
+client.
+
+\begin{lstlisting}
+  sig map : (a -client-> b, [a]) -client-> [b]
+\end{lstlisting}
+
+A client map function of this imaginary signature might not have to
+check the location of the function $f$ in $f(y)$ anymore as long as $f$ is
+guaranteed to be a client function as the signature. This is a local computation
+optimization.
+
+When the map function is applied to a server function $g$ of type
+$a\funL{server}b$, the location of $g$ is required to be adjusted in
+some way to make this function run in the client map function without
+runtime checking.
+%
+Choi and Chang \cite{choijfp2019} proposed an idea of using an eta
+conversion for the location adjustment as
+%
+\[
+fun (x) \ client \ { \ g(x) \ }
+\]
+%
+in the Links syntax\footnote{Actually, Links does not allow to have
+  location annotations in anonymous functions.}.
+%
+This function is of type $a\funL{client} b$ as the signature.
+%
+It would be responsible for moving to the server to perform the
+application of $g(x)$ while the map function is still running in the
+client.
+
+Thus our type inference strategy will consist of a heuristic of
+interpreting location annotation as explained and an adjustment of
+locations as the eta conversion in the example.
 
 
-%\lipsum[2]
-	
-%% \subsection{Preliminaries}
-%% \label{sec:pre}
-	
-%% \lipsum[3]
-	
-%% \subsection{Previous Results}
-%% \label{sec:prev-results}
-	
-%% Null graphs are discussed in \cite{HararyR74}
-%% The concept of ``internally stable set'' was used in \cite{Berge57, Berge58}.
-	
-%% \begin{theorem}
-%% 	\label{thrm:1}
-%% 	\lipsum[4]
-%% \end{theorem}
-%% \begin{proof}
-%% 	content...
-%% \end{proof}
+Note that the map function is a location-neutral one where it should
+run both of the client and the server. So, in Links, the map function
+is written without location annotation as follows.
 
-%% \begin{corollary}
-%% \label{cor:1}
-	
-%% \lipsum[5]
-%% \end{corollary}
+\begin{lstlisting}
+  sig map : (a -> b, [a]) -> [b]
+  fun map(f, xs) {
+    switch( xs ) {
+      case [] -> []
+      case y::ys -> f(y) :: map (f, ys)
+    }
+  }
+\end{lstlisting}
 
-%% Unordered List (taken from Overleaf)
-%% \begin{itemize}
-%% 	\item The individual entries are indicated with a black dot, a so-called bullet.
-%% 	\item The text in the entries may be of any length.
-%% \end{itemize}
+%
+Programmers could view this unannotated function as a polymorphic
+location function.
+%
+This perception would be made use of when compiling into the
+polymorphic RPC calculus where programmers can write location
+abstractions and applications.
+%
+Combining the previous heuristic with a location variable, a map
+function could be made up as a location polymorphic version where $map
+\ [client]$ is a client one and $map \ [server]$ is a server one.
 
-%% Ordered List (taken from Overleaf)
-%% \begin{enumerate}
-%% 	\item The labels consists of sequential numbers.
-%% 	\item The numbers starts at 1 with every call to the enumerate environment.
-%% \end{enumerate}
+\begin{lstlisting}
+  sig map : forall l. (a -l-> b, [a]) -l-> [b]
+\end{lstlisting}
+
+%
+Unfortunately, Links does not support the notion of location variables
+nor location abstractions and applications.
+
+%
+One way of encoding locations in Links would make use of GADTs as
+proposed in Choi et al \cite{CHOI:scp2020}.
+%
+Firstly, let $Location \ \alpha$ be a GADT whose data constructors are
+$Client$ and $Server$.
+%
+They have type $Location \ ClientType$ and
+$Location \ ServerType$, respectively.
+%
+The polymorphic map function in Links would be represented as follows.
+
+\begin{lstlisting}
+  sig map : Location l -> (a -> b, [a]) -> [b]
+  fun map(z) {
+    fun map'(f, xs) {
+      switch( xs ) {
+        case [] -> []
+        case y::ys -> f(y) :: map' (f, ys)
+    }
+  }
+\end{lstlisting}
+
+%
+Here, the polymorphic map function takes a value for representing
+locations as an argument.
+%
+When runtime location checking is necessary, the argument $z$ could be
+examined.
+%
+But in this example, the map function can still run as a local
+computation wherever it chooses to run by $map \ Client$ or $map
+\ Server$.
+%
+There is no need to refer to $z$ in the map example.
+%
+This is a glimpse of an idea of location representation when
+compiling back to Links.
 
 %% \begin{table}[ht]
 %% 	\centering
@@ -412,7 +525,18 @@ Figure~\ref{fig:addingstaticlocationcontexts}.
 %% \end{table}
 
 %% Table~\ref*{tbl:1} is an example of a table.
-	
+
+%
+Section \ref{sec:linksrpc} defines a Links-RPC calculus.
+%
+Section \ref{sec:translationtopolyrpc} discusses a compilation method
+of \polyrpc into \linksrpc.
+%
+Section \ref{sec:compilationwithgadts} discusses a reverse direction
+compilation method.
+%
+Section \ref{sec:conclusion} concludes.
+
 \section{A Links-RPC Calculus}
 \label{sec:linksrpc}
 
