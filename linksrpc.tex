@@ -317,6 +317,16 @@ This summarizes this paper...
 
 A motivation is ...
 
+Figure~\ref{fig:addingstaticlocationcontexts}.)
+\begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.5\textwidth]{linksrpc.png}
+        \caption{Adding Static Location Contexts to Links by Compiling \linksrpc to \polyrpc and back}
+        \label{fig:addingstaticlocationcontexts}
+\end{figure}
+
+
+
 %\lipsum[2]
 	
 %% \subsection{Preliminaries}
@@ -373,18 +383,6 @@ A motivation is ...
 
 %% Table~\ref*{tbl:1} is an example of a table.
 	
-%% \section{More Examples}
-%% \label{sec:examples}
-	
-%% 	%% Now we include a figure.
-%% 	%% (See Figure~\ref{fig:example}.)
-%% 	%% \begin{figure}[ht]
-%% 	%% 	\centering
-%% 	%% 	\includegraphics[width=0.3\textwidth]{example}
-%% 	%% 	\caption{An example of a figure}
-%% 	%% 	\label{fig:example}
-%% 	%% \end{figure}
-
 \section{A Links-RPC Calculus}
 \label{sec:linksrpc}
 
@@ -415,8 +413,8 @@ Let us call it a Links-RPC calculus, \linksrpc.
 \label{fig:linksrpc}
 \end{figure}
 
-The terms and types of the Links-RPC calculus are shown in Figure
-\ref{fig:linksrpc}.
+The terms and types of the Links-RPC calculus are shown in
+Figure~\ref{fig:linksrpc}.
 %
 In the calculus, it is not mandatory to annotate locations to
 $\lambda$ abstractions. This is for programmers' convenience.
@@ -561,8 +559,8 @@ $\lamL{\client}{x}{f \ x}$ is derived.
 Then the adjusted function could be fed into the client map function
 as its first argument in \polyrpc.
 
-A type-directed location adjustment to terms is formulated as Figure
-\ref{fig:locationadjustment}. 
+A type-directed location adjustment to terms is formulated as
+Figure~\ref{fig:locationadjustment}.
 %
 The rules are defined in terms of type structure, actually doing the
 eta conversion for function, pair, polymorphic, polymorphic location
@@ -615,7 +613,7 @@ producing the adjusted term, $\lamL{\client}{x}{f \ x}$.
 
 Based on the heuristic type compilation with the type-directed
 location adjustment, we can define the compilation rules of \linksrpc
-into \polyrpc as shown in Figure \ref{fig:compilationoflinksrpc}.
+into \polyrpc as shown in Figure~\ref{fig:compilationoflinksrpc}.
 
 \begin{figure}[h]
 \centering
@@ -831,8 +829,8 @@ $(\cdots) \ [ServerType] \ Server$.
 
 %
 Using this way of encoding locations, the compilation of locations in
-\polyrpc into types in \linksrpc can be defined as Figure
-\ref{fig:locationcompilationback}.
+\polyrpc into types in \linksrpc can be defined as
+Figure~\ref{fig:locationcompilationback}.
 
 \begin{figure}[h]
 \centering
@@ -859,7 +857,7 @@ Also, location abstractions $\forall l. A$, which is not expressible in
 function types $\forall\alpha_l. Location \ \alpha_l \rightarrow A$.
 %
 
-Figure \ref{fig:typecompilationback} defines a reverse type
+Figure~\ref{fig:typecompilationback} defines a reverse type
 compilation based on the idea explained.
 
 \begin{figure}[h]
@@ -876,76 +874,6 @@ compilation based on the idea explained.
 \caption{A type compilation of \polyrpc into types in \linksrpc}
 \label{fig:typecompilationback}
 \end{figure}
-
-%
-Figure \ref{fig:termcompilationback} shows a term compilation of
-\polyrpc into \linksrpc.
-%
-There are three things to note.
-%
-First, the definition uses location representation by values.
-%
-The representation method is defined by the compilation of locations
-into terms $\loctmcomp{\Loc}=V$.
-%
-The client location $\client$ is represented by the data constructor
-$Client$ while $\server$ is so by $Server$.
-%
-Note that the representation method is reminiscent of one used in the
-compilation of the polymorphic CS calculus into the untyped CS
-\cite{cclr2021}.
-
-%
-Second, location abstractions are represented actually by
-$\lambda$-abstractions guarded by type abstractions to introduce a
-type variable for a parameter of the type $Location \alpha$ of the
-$\lambda$-variable.
-%
-For example,
-\[
-\Lambda l.\lamL{l}{f}{f \ 42}
-\]
-would be compiled to
-\[
-\Lambda\alpha.\lamL{\client}{y_l}{\lamL{}{f}{f \ 42}}
-\]
-where the type of
-$y_l$ is $Location \ \alpha$.
-%
-Then an application term in \polyrpc 
-\[
-(\Lambda l.\lamL{l}{f}{f \ 42}) \ [\client]
-\]
-would be a term in \linksrpc
-\[
-(\Lambda\alpha.\lamL{\client}{y_l}{\lamL{}{f}{f \ 42}}) \ [ClientType]
-\ Client
-\]
-where the type of $y_l$ is $Location \ ClientType$.
-%
-After applying it to the client location value $Client$, this location
-can be examined through the value bound to $y_l$ in runtime.
-
-%
-Third, there are four compilation rules for application terms in
-\polyrpc.
-%
-The first three rules for application terms provides static location
-contexts.
-%
-In the static location contexts, there is no need to check the
-location of functions to invoke by the runtime system for \linksrpc,
-though our compilation rules have not expressed this by using
-different syntactic terms such as $V(W)$ for local procedure calls and
-$\req{V}{W}$ and $\call{V}{W}$ for remote procedure calls as in the
-Client-Server calculus \cite{cclr2021}.
-%
-The last rule for application terms is about dynamic location contexts
-where location information is provided by two variables (or one
-constant and one variable) $\loctmcomp{\Loc}$ and $\loctmcomp{\Loc'}$
-that represent the location of the application term and the location
-of its function, respectively.
-
 
 \begin{figure}[t]
 \centering
@@ -995,7 +923,9 @@ of its function, respectively.
   \\
   \ \ \ \ \ \ \ \ \ where $f=\judgcomp{M}{\tyenv,\Loc,A\funL{\Loc'}B}$ and $arg=\judgcomp{N}{\tyenv,\Loc,A}$. 
   \\
-  \ \ \ \ \ \ \ \ \ (local/remote procedure calls after dynamic location checking)
+  \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  $if(L,M,N)=\case{M}{Client\rightarrow M; Server\rightarrow N}$.   
+  \\
+  \ \ \ \ \ \ \ \ \ (local/remote procedure calls depending on conditionals)
   \\[\ruleverticalsephalf]
 %  
   $\judgcomp{\Lambda l.V}{\tyenv,\Loc,\forall l.B} \ = \
@@ -1023,6 +953,83 @@ of its function, respectively.
 \caption{A term compilation of \polyrpc into terms in \linksrpc}
 \label{fig:termcompilationback}
 \end{figure}
+
+%
+Figure~\ref{fig:termcompilationback} shows a term compilation of
+\polyrpc into \linksrpc.
+%
+There are three things to note.
+%
+Firstly, the definition uses location representation by values.
+%
+The representation method is defined by the compilation of locations
+into terms $\loctmcomp{\Loc}=V$.
+%
+The client location $\client$ is represented by the data constructor
+$Client$ while $\server$ is so by $Server$.
+%
+Note that the representation method is reminiscent of one used in the
+compilation of the polymorphic CS calculus into the untyped CS
+\cite{cclr2021}.
+
+%
+Secondly, location abstractions are represented actually by
+$\lambda$-abstractions guarded by type abstractions to introduce a
+type variable for a parameter of the type $Location \alpha$ of the
+$\lambda$-variable.
+%
+For example,
+\[
+\Lambda l.\lamL{l}{f}{f \ 42}
+\]
+would be compiled to
+\[
+\Lambda\alpha.\lamL{\client}{y_l}{\lamL{}{f}{f \ 42}}
+\]
+where the type of
+$y_l$ is $Location \ \alpha$.
+%
+Then an application term in \polyrpc 
+\[
+(\Lambda l.\lamL{l}{f}{f \ 42}) \ [\client]
+\]
+would be a term in \linksrpc
+\[
+(\Lambda\alpha.\lamL{\client}{y_l}{\lamL{}{f}{f \ 42}}) \ [ClientType]
+\ Client
+\]
+where the type of $y_l$ is $Location \ ClientType$.
+%
+After applying it to the client location value $Client$, this location
+can be examined through the value bound to $y_l$ in runtime.
+
+%
+Thirdly, there are four compilation rules for application terms in
+\polyrpc.
+%
+The first three rules for application terms provides static location
+contexts.
+%
+In the static location contexts, there is no need to check the
+location of functions to invoke by the runtime system for \linksrpc,
+though our compilation rules have not expressed this by using
+different syntactic terms such as $V(W)$ for local procedure calls and
+$\req{V}{W}$ and $\call{V}{W}$ for remote procedure calls as in the
+Client-Server calculus \cite{cclr2021}.
+%
+The last rule for application terms is about dynamic location contexts
+where location information is provided by two variables (or one
+constant and one variable) $\loctmcomp{\Loc}$ and $\loctmcomp{\Loc'}$
+that represent the location of the application term and the location
+of its function, respectively.
+
+
+%
+Note that $\anncomp{\Loc}$ determines annotations over locations
+$\Loc$.
+%
+Location variables disappear after the compilation, but they remain as
+term variables as explained previously.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -1127,7 +1134,7 @@ programmers.
 \label{fig:polyrpc}
 \end{figure}
 
-Figure \ref{fig:polyrpc} shows the syntax and semantics of the
+Figure~\ref{fig:polyrpc} shows the syntax and semantics of the
 polymorphic RPC calculus, {\polyrpc} that allows programmers to use
 the same syntax of $\lambda$-application for both local and remote
 calls, and allows them to compose differently located functions
@@ -1263,7 +1270,7 @@ The remaining semantics rules are easily understood.
 \subsection{The Type System}
 \label{sec:polyrpc:typesystem}
 
-Figure \ref{fig:polyrpctysystem} shows a type system for the
+Figure~\ref{fig:polyrpctysystem} shows a type system for the
 polymorphic RPC calculus \cite{CHOI:scp2020} that can identify remote
 procedure calls at the type level, supporting location polymorphism.
 %
