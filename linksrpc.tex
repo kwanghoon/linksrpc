@@ -1020,9 +1020,9 @@ This term can be applied as $(\cdots) \ [ClientType] \ Client$ or as
 $(\cdots) \ [ServerType] \ Server$.
 
 %
-Using this way of encoding locations, the compilation of locations in
-\polyrpc into types in \linksrpc can be defined as
-Figure~\ref{fig:locationcompilationback}.
+Using this way of encoding locations, $\loctycomp{\Loc}=A$, the
+compilation of locations $\Loc$ in \polyrpc into types $A$ in
+\linksrpc, can be defined as Figure~\ref{fig:locationcompilationback}.
 
 \begin{figure}[h]
 \centering
@@ -1038,15 +1038,16 @@ $\loctycomp{l} \ = \ Location \ \alpha_l$
 
 
 %
-For compiling back, a reverse of the type compilation that uses a
-heuristic to introduce locations to function types is required.
+For compiling back, a reverse of the heuristic type compilation is
+required.
 %
-This time the reverse type compilation would erase locations annotated
-to function types.
+The reverse type compilation would have only to erase locations
+annotated to function types except for location abstractions.
 %
-Also, location abstractions $\forall l. A$, which is not expressible in
+Location abstractions $\forall l. A$, which is not expressible in
 \linksrpc, would be replaced by a combination of type abstractions and
-function types $\forall\alpha_l. Location \ \alpha_l \rightarrow A$.
+function types $\forall\alpha_l. Location \ \alpha_l \rightarrow A$
+using the location GADT.
 %
 
 Figure~\ref{fig:typecompilationback} defines a reverse type
@@ -1176,7 +1177,7 @@ For example,
 \]
 would be compiled to
 \[
-\Lambda\alpha.\lamL{\client}{y_l}{\lamL{}{f}{f \ 42}}
+\Lambda\alpha.\lamL{}{y_l}{\lamL{}{f}{f \ 42}}
 \]
 where the type of
 $y_l$ is $Location \ \alpha$.
@@ -1187,13 +1188,14 @@ Then an application term in \polyrpc
 \]
 would be a term in \linksrpc
 \[
-(\Lambda\alpha.\lamL{\client}{y_l}{\lamL{}{f}{f \ 42}}) \ [ClientType]
+(\Lambda\alpha.\lamL{}{y_l}{\lamL{}{f}{f \ 42}}) \ [ClientType]
 \ Client
 \]
 where the type of $y_l$ is $Location \ ClientType$.
 %
 After applying it to the client location value $Client$, this location
-can be examined through the value bound to $y_l$ in runtime.
+can be examined in runtime through a variable $y_l$ bound to the
+location representation value.
 
 %
 Thirdly, there are four compilation rules for application terms in
@@ -1220,8 +1222,9 @@ of its function, respectively.
 Note that $\anncomp{\Loc}$ determines annotations over locations
 $\Loc$.
 %
-Location variables disappear after the compilation, but they remain as
-term variables as explained previously.
+Location variables disappear from the $\lambda$-abstractions after the
+compilation, but they would remain as term variables as explained
+previously.
 
 \section{Conclusion}
 \label{sec:conclusion}
