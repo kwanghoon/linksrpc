@@ -348,6 +348,11 @@ contexts in Links equally useful for the aforementioned benefits but
 in the hope of no change or minimal changes that do not affect the
 Links language system so much.
 
+%
+Note that this paper refers to Links as its intermediate
+representation, the Links IR.
+
+%
 Figure~\ref{fig:addingstaticlocationcontexts} shows a general
 methodology to approach this alternative direction by analyzing static
 location contexts via compiling to the polymorphic RPC calculus and
@@ -397,11 +402,12 @@ presence of the client location annotation, all function types
 occurring in the map function types would be assumed to have the same
 location annotation.
 %
-The following signature, though Links does not allow such a function
-type, describes the idea of this heuristic.
+The following signature would describes the idea of this heuristic if
+Links did allow such a function type.
 %
-For notation, $a \funL{client} b$ is a type of functions that are
-guaranteed to run in the client.
+For notation, $a \funL{client} b$ intends to mean a type of functions
+that are guaranteed to run in the client as in the polymorphic RPC
+calculus \cite{CHOI:scp2020}.
 
 \begin{lstlisting}
   sig map : (a -client-> b, [a]) -client-> [b]
@@ -414,8 +420,8 @@ optimization.
 
 When the map function is applied to a server function $g$ of type
 $a\funL{server}b$, the location of $g$ is required to be adjusted in
-some way to make this function run in the client map function without
-runtime checking.
+some way to run this function inside the client map function that does
+not runtime checking.
 %
 Choi and Chang \cite{choijfp2019} proposed an idea of using an eta
 conversion for the location adjustment as
@@ -474,6 +480,8 @@ function could be made up as a location polymorphic version where $map
 %
 Unfortunately, Links does not support the notion of location variables
 nor location abstractions and applications.
+%
+So, we need to encode this location polymorphism in a way.
 
 %
 One way of encoding locations in Links would make use of GADTs as
@@ -500,22 +508,26 @@ Links, as follows.
 \end{lstlisting}
 
 %
-The Links signaure should be interpreted similarly as the heuristic.
+The Links signaure should be interpreted similarly as explained with
+the heuristic previously.
 %
 That is, it would be viewed as $(a \funL{l} b, [a]) \funL{l} [b]$.
 %
 
-In this example, the polymorphic map function can still run as a local
-computation wherever it chooses to run by $map \ Client$ or $map
-\ Server$.
+This polymorphic map function can run wherever it chooses to run by
+$map \ Client$ or $map \ Server$ by applying it to one of the data
+constructors that represent client and server locations.
 %
-There is no need to refer to $z$ in the map example.
+Interestingly, the polymorphic map function can still run as a local
+computation. 
+%
+So, there is no need to refer to $z$ in the map example.
 
-However, sometimes there is a need to check locations in runtime.
+However, in other examples,there is sometimes a need to check
+locations in runtime.
 %
-For
-this purpose, the polymorphic map function is written to take a value
-for representing locations as an argument.
+For this purpose, the polymorphic map function is written to take a
+value for representing locations as an argument.
 %
 When runtime location checking is necessary, the argument $z$ could be
 examined.
