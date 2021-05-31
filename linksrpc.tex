@@ -570,14 +570,14 @@ Section \ref{sec:conclusion} concludes.
 
 This section describes a RPC calculus that extends the RPC calculus
 \cite{Cooper:2009:RC:1599410.1599439} with unannotated
-$\lambda$-abstractions whose location is not specified.
+$\lambda$-abstractions whose locations are not specified.
 %
 The extended RPC calculus intends to capture the RPC feature of the
 Links programming language \cite{Cooper:2006:LWP:1777707.1777724} in a
 simple way.
 %
-For our setting, the calculus is also extended with type abstractions
-and applications.
+For our setting, the calculus is also extended with polymorphic types
+with type abstractions and applications.
 %
 Let us call it a Links-RPC calculus, \linksrpc.
 
@@ -605,11 +605,11 @@ Figure~\ref{fig:linksrpc}.
 In the calculus, it is not mandatory to annotate locations to
 $\lambda$ abstractions. This is for programmers' convenience.
 %
-$?a$ means that every annotation is either a location constant $a$ or
+An optional location $?a$ means that every annotation is either a location constant $a$ or
 unknown.
 %
 Regardless of the presence of location annotations, function types are
-$A \rightarrow B$ with no locations in a type-level.
+$A \rightarrow B$ with no locations in types.
 %
 No notion of location variables is available in the calculus, and so
 there are no location abstractions nor applications.
@@ -959,12 +959,15 @@ It is legitimate to have an adjustment as
 \[
 \adjcomp{\Lambda\alpha.(\lamL{\client}{x}{x}, 42)}
         {\forall\alpha.(\alpha\funL{\client}\alpha\times Int) \ \ }
-        {\ \ \Lambda\alpha.(\lamL{\server}{x}{x}, 42)}
+        {\ \ \Lambda\alpha.(\lamL{\server}{y}{(\lamL{\client}{x}{x}) \ y}, 42)}
         {\forall\alpha.(\alpha\funL{\server}\alpha\times Int)}
 \]
 when the body of the type abstraction is known.
 %
-Otherwise, it seems only to have
+Note that the body of the type abstraction is in the form of values.
+%
+Otherwise, when it is difficult to know how the body of the type
+abstraction is structured, it seems only to have
 \[
 \adjcomp{f}
         {\forall\alpha.(\alpha\funL{\client}\alpha\times Int) \ \ }
