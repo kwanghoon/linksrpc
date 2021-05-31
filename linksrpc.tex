@@ -307,7 +307,7 @@
 \begin{abstract}
 %
 This progress report describes an attempt to recover static location
-contexts in the Links-RPC calculus, which represents the RPC aspect of
+contexts in the Links-RPC calculus, which captures the RPC aspect of
 Links, by compiling to the polymorphic RPC calculus and back to
 itself.
 %  
@@ -392,14 +392,16 @@ Therefore, the implementation of $f(y)$ should always check the
 location of the function $f$ before its application to $y$.
 
 %
-A heuristic could be adopted to reflect the programmer's view by the
-presence of the client location annotation to all function types
-occurring in the map function types.
+A heuristic could be made up to reflect the programmers' view: by the
+presence of the client location annotation, all function types
+occurring in the map function types would be assumed to have the same
+location annotation.
 %
-The following signature, though Links does not allow to write such a
-function type, describes the idea of this interpretation where
-functions of type $a \funL{client} b$ is guaranteed to run in the
-client.
+The following signature, though Links does not allow such a function
+type, describes the idea of this heuristic.
+%
+For notation, $a \funL{client} b$ is a type of functions that are
+guaranteed to run in the client.
 
 \begin{lstlisting}
   sig map : (a -client-> b, [a]) -client-> [b]
@@ -419,26 +421,29 @@ Choi and Chang \cite{choijfp2019} proposed an idea of using an eta
 conversion for the location adjustment as
 %
 \[
-fun (x) \ client \ { \ g(x) \ }
+fun \ (x) \ client \ { \ g(x) \ }
 \]
 %
 in the Links syntax\footnote{Actually, Links does not allow to have
   location annotations in anonymous functions.}.
 %
-This function is of type $a\funL{client} b$ as the signature.
+This anonymous function is of type $a\funL{client} b$ as the
+signature.
 %
 It would be responsible for moving to the server to perform the
 application of $g(x)$ while the map function is still running in the
-client.
+client without runtime location checking.
 
 Thus our type inference strategy will consist of a heuristic of
 interpreting location annotation as explained and an adjustment of
 locations as the eta conversion in the example.
 
 
-Note that the map function is a location-neutral one where it should
-run both of the client and the server. So, in Links, the map function
-is written without location annotation as follows.
+Generally, the map function is written as a location-neutral one where
+it should be able to run both of in the client and in the server.
+%
+In Links, the map function is written without location annotation as
+follows.
 
 \begin{lstlisting}
   sig map : (a -> b, [a]) -> [b]
@@ -456,7 +461,7 @@ location function.
 %
 This perception would be made use of when compiling into the
 polymorphic RPC calculus where programmers can write location
-abstractions and applications.
+abstractions and applications with location variables.
 %
 Combining the previous heuristic with a location variable, a map
 function could be made up as a location polymorphic version where $map
@@ -480,7 +485,8 @@ $Client$ and $Server$.
 They have type $Location \ ClientType$ and
 $Location \ ServerType$, respectively.
 %
-The polymorphic map function in Links would be represented as follows.
+The polymorphic map function of the signature would be written in
+Links, as follows.
 
 \begin{lstlisting}
   sig map : Location l -> (a -> b, [a]) -> [b]
@@ -494,17 +500,27 @@ The polymorphic map function in Links would be represented as follows.
 \end{lstlisting}
 
 %
-Here, the polymorphic map function takes a value for representing
-locations as an argument.
+The Links signaure should be interpreted similarly as the heuristic.
 %
-When runtime location checking is necessary, the argument $z$ could be
-examined.
+That is, it would be viewed as $(a \funL{l} b, [a]) \funL{l} [b]$.
 %
-But in this example, the map function can still run as a local
+
+In this example, the polymorphic map function can still run as a local
 computation wherever it chooses to run by $map \ Client$ or $map
 \ Server$.
 %
 There is no need to refer to $z$ in the map example.
+
+However, sometimes there is a need to check locations in runtime.
+%
+For
+this purpose, the polymorphic map function is written to take a value
+for representing locations as an argument.
+%
+When runtime location checking is necessary, the argument $z$ could be
+examined.
+%
+
 %
 This is a glimpse of an idea of location representation when
 compiling back to Links.
