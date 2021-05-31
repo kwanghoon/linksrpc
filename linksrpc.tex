@@ -650,23 +650,23 @@ the typing rules for \linksrpc.
 \label{sec:translationtopolyrpc}
 
 The purpose of compiling the Links-RPC calculus into the polymorphic
-RPC calculus is to recover location information during the evaluation of
-\linksrpc terms and to express it by located types of \polyrpc explicitly.
+RPC calculus is to recover location information on where the
+evaluation of \linksrpc terms are and to express it by located types
+of \polyrpc explicitly.
 %
 Such statically recovered location information would be made use of
 later for transformations and optimizations, such as avoiding
 unnecessary location checking at runtime for solely local computation.
 %
-Basically, this compilation would translate normal function types
-$A_1 \rightarrow A_2$ into located function types $A_1' \funL{\Loc}
-A_2'$ for some $A_i$s.
+Basically, this compilation would translate normal function types $A_1
+\rightarrow A_2$ into located function types $B_1 \funL{\Loc} B_2$ for
+some $B_i$s recoving the static location information $\Loc$.
 %
-Then where do locations, such as $\Loc$, come from?
+Then an obvious question would be where such location information
+comes from.
 %
-Generally, they are nowhere in the Links-RPC terms and types.
-%
-Therefore, a heuristic should be introduced to recover location
-information lack in the terms and types.
+There is a need to introduce a heuristic to recover location
+information lack in the Links-RPC terms and types.
 
 
 A heuristic approach is to view \linksrpc types $A$ as \polyrpc types $B$ where
@@ -679,15 +679,19 @@ A heuristic approach is to view \linksrpc types $A$ as \polyrpc types $B$ where
 \end{itemize}
 %
 For example, the type of a client map function, $(Int \rightarrow Int)
-\rightarrow [Int] \rightarrow [Int]$, can be viewed as $(Int \funL{\client}
+\times [Int] \rightarrow [Int]$, can be viewed as $(Int \funL{\client}
 Int) \funL{\client} [Int] \funL{\client} [Int]$.
 %
-As is seen, not only the two function types on the spine get client
-locations but the argument function type is also annotated with it.
-
+As is seen, not only a function type on the spine gets client
+locations but an argument function type is also annotated with it in
+the same way.
+%
+This is a heuristic that we are going to adopt for our location
+inference during compiling \linksrpc to \polyrpc.
 
 %
-This idea can be formulated as a type translation $\linkstycomp{A}{\Loc} = B$:
+This heuristic idea can be formulated as a type translation
+$\linkstycomp{A}{\Loc} = B$:
 
 \begin{figure}[h]
 \centering
@@ -703,21 +707,21 @@ $\linkstycomp{A\times B}{\Loc}$ & $=$ & $\linkstycomp{A}{\Loc}\times \linkstycom
 $\linkstycomp{\forall\alpha.A}{\Loc}$ & $=$ & $\forall\alpha.\linkstycomp{A}{\Loc}$
 \\
 \end{tabular}
-\caption{A type compilation of \linksrpc into \polyrpc}
+\caption{A type compilation of \linksrpc into \polyrpc for our heuristic interpretation}
 \label{fig:typecompilation}
 \end{figure}
 
 Note that the explained client map function type in \polyrpc is
-obtained from $\linkstycomp{(Int \rightarrow Int) \rightarrow [Int] \rightarrow
+obtained from $\linkstycomp{(Int \rightarrow Int) \times [Int] \rightarrow
   [Int]}{\client}$ by extending it over list types as
 $\linkstycomp{[A]}{\Loc} = [ \linkstycomp{A}{\Loc} ]$ in a straightforward way.
 
 Obviously, this heurisitc is not always satisfactory.
 %
-For example, $map \ f \ list$ is legitimate in \linksrpc even when
-$map$ of the client map function type takes a function of type $Int
-\funL{\client} Int$ but $f$ of type $Int \funL{\server} Int$ is given
-as an argument in \polyrpc.
+For example, $map \ f \ list$ is legitimate in \linksrpc even when the
+client map function takes a function of type $Int \funL{\client} Int$
+as the first argument but a server function of type $Int
+\funL{\server} Int$ is given for the argument in \polyrpc.
 %
 This is because \linksrpc can deal with this discrepancy by runtime
 location checking.
@@ -726,21 +730,21 @@ However, there should be some adjustments to locations in compiled
 types and terms.
 
 A type-directed location adjustment is formulated as the following
-form of judgments:
+form of judgments over terms and types in \polyrpc.
 \[
 \adjcomp{M}{A}{M'}{A'}
 \]
-From a term $M$ of type $A$, a new adjusted term $M'$ is derived under
-the guidance of another type $A'$ having the same skeleton as but
-possibly locatational discrepancies with $A$.
+From a term $M$ of type $A$, a new adjusted term $M'$ is
+derived under the guidance of another type $A'$ having the same
+skeleton as but possibly locatational discrepancies with $A$.
 %
 For example,
 \[
 \adjcomp{f}{Int \funL{\server} Int \ }{\ (\lamL{\client}{x}{f
     \ x})}{Int \funL{\client} Int}
 \]
-where given the three inputs, the adjusted client function
-$\lamL{\client}{x}{f \ x}$ is derived.
+where given three inputs, $f$, the type of $f$, and an adjusted type,
+an adjusted client function $\lamL{\client}{x}{f \ x}$ is derived.
 %
 Then the adjusted function could be fed into the client map function
 as its first argument in \polyrpc.
@@ -793,9 +797,8 @@ function types to produce new terms of the adjusted types.
 \label{fig:locationadjustment}
 \end{figure}
 
-Using the rules, one can derive the example adjustment judgment for
-given $f$, the server function type, and the client function,
-producing the adjusted term, $\lamL{\client}{x}{f \ x}$.
+Using the rules, one can derive the example adjustment judgment
+explained previously for $\lamL{\client}{x}{f \ x}$.
 
 Based on the heuristic type compilation with the type-directed
 location adjustment, we can define the compilation rules of \linksrpc
@@ -905,7 +908,7 @@ compilation method is defined to take a type environment $\Delta$ and a
 location $\Loc$.
 %
 The type environment $\Delta$ provides how types for free variables in
-\linksrpc are heuristically compiled depending on locational contexts.
+\linksrpc have been heuristically compiled.
 %
 The location $\Loc$ informs where terms being compiled are.
 
@@ -937,8 +940,8 @@ We have a problem in the formulation of the compilation of \linksrpc
 into \polyrpc.
 %
 Recall that type and location abstractions are defined in the form as
-$\Lambda\alpha.V$ and $\Lambda l.V$ where the bodies are in the form
-of values.
+$\Lambda\alpha.V$ and $\Lambda l.V$ whose bodies are in the form of
+values.
 %
 The compilation of arbitrary ranked \linksrpc terms could produce
 \polyrpc terms that violate this syntactic restriction.
