@@ -399,7 +399,7 @@ location of the function $f$ before its application to $y$.
 %
 A heuristic could be made up to reflect the programmers' view: by the
 presence of the client location annotation, all function types
-occurring in the map function types would be assumed to have the same
+occurring in the map function type would be assumed to have the same
 location annotation.
 %
 The following signature would describes the idea of this heuristic if
@@ -430,8 +430,8 @@ conversion for the location adjustment as
 fun \ (x) \ client \ { \ g(x) \ }
 \]
 %
-in the Links syntax\footnote{Actually, Links does not allow to have
-  location annotations in anonymous functions.}.
+in the Links syntax\footnote{Actually, Links does not allow anonymous
+  functions to have location annotations.}.
 %
 This anonymous function is of type $a\funL{client} b$ as the
 signature.
