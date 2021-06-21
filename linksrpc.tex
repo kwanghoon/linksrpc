@@ -1541,9 +1541,55 @@ $\evalRPC{M}{a}{V}$, then $\typing{\emptyset}{a}{V}{A}$.
 \label{thm:typesoundness}
 \end{theorem}
 
-	
-%% \lipsum[7]
-	
+\section{Relaxing the Value Restriction of the Polymorphic RPC Calculus}
+\label{app:2}
+
+In the polymorphic RPC calculus, the body of location and type
+abstractions is restricted to values as $\Lambda l. V$ and
+$\Lambda\l.V$.
+%
+This is a form of the value restriction, which is well-known in the ML
+programming language family, that, for example, prevents reference
+cells from holding values of different types and preserves type
+safety.
+%
+The value restriction in the polymorphic RPC calculus is not only
+about type safe polymorphic references but, more importantly, it is
+also about the statically located context of application terms.
+%
+The type soundness (Theorem \ref{thm:typesoundness}) actually proves
+that after compiling typed application terms into local, remote, and
+dynamically determined procedure calls, each kind of procedure calls
+will never be changed in runtime.
+%
+However, it does not tell why any attempts to relax the value
+restriction can break the type soundness of the polymorphic RPC
+calculus at all.
+%
+This section will discuss why the relaxation can break the type
+soundness and how the value restriction can be relaxed still
+preserving the type soundness.
+
+\subsection{An Account for the Value Restriction}
+
+% Application terms with locations : M N @ Loc (M must be applied to n only at Loc)
+% Prove the type soundness again.
+
+\subsection{Breaking the Type Soundness by Relaxation}
+
+% Relax the value restriction as /\a.M and /\l.M
+% Show a counterexample that is type-checked but get stuck by
+% an attempt to apply M to N at other location than Loc.
+
+\subsection{An Effectful Polymorphic RPC Calculus with No Value Restriction}
+
+% Application terms with locations : M N @ Loc (M must be applied to n only at Loc)
+% Relax the value restriction as /\a.M and /\l.M
+% but introduce effects to them as /\a.{eff}M and /\l.{eff}M
+% where {eff} is either empty or a fresh location variable l'.
+% The idea is simple: Make it be dynamically located!
+% Prove the type soundness
+
 \end{document}
 
 %% <Memo>
