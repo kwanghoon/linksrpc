@@ -1566,8 +1566,9 @@ This section will discuss an extended polymorphic RPC calculus
 supporting $\Lambda l.M$ and $\Lambda l.M$ with no value restriction
 on polymorphism.
 %
-We discuss why this relaxation can break the type safety and how the
-relaxed calculus is designed to preserve the type safety.
+We discuss why this relaxation can break the type safety unless it is
+carefully dealt with and how the relaxed calculus is designed to
+preserve the type safety.
 
 \subsection{Motivation}
 
@@ -1593,7 +1594,7 @@ calculus.
 The other motivation comes from a practical purpose.
 %
 A goal of location inference is to infer as many static location as
-possible from rpc programs with minimal location annotations like the
+possible from RPC programs with minimal location annotations like the
 Links programs.
 %
 In Links, location annotations are so minimal that programmers might
@@ -1605,7 +1606,7 @@ programs to discover as many static location contexts as possbile.
 One problem with this algorithm is that it requires a program
 transformation for location adjustment.
 %
-This can break the value restriction on polymorphism in the rpc
+This can break the value restriction on polymorphism in the RPC
 calculus.
 %
 So there is a need to take a look at whether the value restriction can
@@ -1621,7 +1622,7 @@ side effects such as mutable references with no conflicts between
 them.
 
 %
-The rpc calculus itself may look as a pure lambda calculus with no
+The RPC calculus itself may look as a pure lambda calculus with no
 side effects since it does not have mutable references.
 %
 But an unusual notion of side effects arises as soon as you try to
@@ -1646,12 +1647,12 @@ a requirement for specific static location associated with applicaion
 terms inside the polymorphic terms.
 %
 This needs to be addressed when we relax the value restriction on the
-polymorphism in the rpc calculus.
+polymorphism in the RPC calculus.
 %
 A simple idea is to enforce dynamic location checking whenever such a
 conflict arises.
 %
-Using this idea, we are able to design a new rpc calculus that relaxes
+Using this idea, we are able to design a new RPC calculus that relaxes
 the value restriction on polymorphism.
 
 \subsection{A Relaxed Polymorphic RPC Calculus}
