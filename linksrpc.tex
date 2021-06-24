@@ -1555,8 +1555,8 @@ $\Lambda\l.V$.
 This is a form of value restriction on polymorphism.
 %
 The value restriction is well-known in the ML programming language
-family for the purpose of integrating {\it effectful} features such as
-mutable references with polymorphism without breaking type safety.
+family for the purpose of integrating {\it effectful} features, such
+as mutable references, with polymorphism without breaking type safety.
 %
 In the polymorphic RPC calculus, value restriction provides a simple
 mean to integrate the statically located context of application terms
@@ -1647,13 +1647,14 @@ terms inside the polymorphic terms.
 %
 This needs to be addressed when we relax the value restriction on the
 polymorphism in the rpc calculus.
-
 %
 A simple idea is to enforce dynamic location checking whenever such a
 conflict arises.
 %
 Using this idea, we are able to design a new rpc calculus that relaxes
 the value restriction on polymorphism.
+
+\subsection{A Relaxed Polymorphic RPC Calculus}
 
 %
 Figure \ref{fig:polyrpcm} presents terms and types in a new relaxed
