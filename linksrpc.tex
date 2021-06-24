@@ -93,6 +93,7 @@
 \newcommand{\rpc}{$\lambda_{rpc}$\xspace}
 \newcommand{\typedrpc}{$\lambda_{rpc}^{typed}$\xspace}
 \newcommand{\polyrpc}{$\lambda_{rpc}^{\forall}$\xspace}
+\newcommand{\polyrpcM}{$\lambda_{rpc}^{\forall,M}$\xspace}
 \newcommand{\linksrpc}{$\lambda_{rpc}^{Links}$\xspace}
 \newcommand{\kindedpolyrpc}{$\lambda_{rpc}^{\forall,k}$\xspace}
 
@@ -282,6 +283,9 @@
 \newcommand{\CloCodeType}{Ty}
 \newcommand{\CloCode}{Code}
 \newcommand{\OpenCode}{OpenCode}
+
+\newcommand{\at}[1]{@#1}
+\newcommand{\eff}{\mbox{\texttt{ctx}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1541,47 +1545,135 @@ $\evalRPC{M}{a}{V}$, then $\typing{\emptyset}{a}{V}{A}$.
 \label{thm:typesoundness}
 \end{theorem}
 
-\section{Relaxing the Value Restriction of the Polymorphic RPC Calculus}
+\section{A Polymorphic RPC Calculus with No Value Restriction}
 \label{app:2}
 
-In the polymorphic RPC calculus, the body of location and type
-abstractions is restricted to values as $\Lambda l. V$ and
+Recall that the polymorphic RPC calculus restricts the body of
+location and type abstractions to values as $\Lambda l. V$ and
 $\Lambda\l.V$.
 %
-This is a form of the value restriction, which is well-known in the ML
-programming language family, that, for example, prevents reference
-cells from holding values of different types and preserves type
-safety.
+This is a form of value restriction on polymorphism.
 %
-The value restriction in the polymorphic RPC calculus is not only
-about type safe polymorphic references but, more importantly, it is
-also about the statically located context of application terms.
+The value restriction is well-known in the ML programming language
+family for the purpose of integrating {\it effectful} features such as
+mutable references with polymorphism without breaking type safety.
 %
-The type soundness (Theorem \ref{thm:typesoundness}) actually proves
-that after compiling typed application terms into local, remote, and
-dynamically determined procedure calls, each kind of procedure calls
-will never be changed in runtime.
+In the polymorphic RPC calculus, value restriction provides a simple
+mean to integrate the statically located context of application terms
+with polymorphism.
 %
-However, it does not tell why any attempts to relax the value
-restriction can break the type soundness of the polymorphic RPC
-calculus at all.
+This section will discuss an extended polymorphic RPC calculus
+supporting $\Lambda l.M$ and $\Lambda l.M$ with no value restriction
+on polymorphism.
 %
-This section will discuss why the relaxation can break the type
-soundness and how the value restriction can be relaxed still
-preserving the type soundness.
+We discuss why this relaxation can break the type safety and how the
+relaxed calculus is designed to preserve the type safety.
 
-\subsection{An Account for the Value Restriction}
+\subsection{Motivation}
+
+%
+There are two motivations on studying value restriction on
+polymorphism in the RPC calculus and its relaxation.
+%
+A motivation comes from a theoretical interest.
+%
+The existing studies on the typed RPC calculus have not clearly
+explained what value restriction on polymorphism means to the calculus
+itself.
+%
+They explained it indirectly or implicitly by compiling it into
+client-server calculi where application terms are compiled accordingl
+to statically determined location contexts.
+%
+The correctness of the
+compilation can explain the notion of value restriction in the RPC
+calculus.
+
+%
+The other motivation comes from a practical purpose.
+%
+A goal of location inference is to infer as many static location as
+possible from rpc programs with minimal location annotations like the
+Links programs.
+%
+In Links, location annotations are so minimal that programmers might
+not feel so hard in writting location annotations.
+%
+We are designing a location inference algorithm for Links-like
+programs to discover as many static location contexts as possbile.
+%
+One problem with this algorithm is that it requires a program
+transformation for location adjustment.
+%
+This can break the value restriction on polymorphism in the rpc
+calculus.
+%
+So there is a need to take a look at whether the value restriction can
+be relaxed enough to permit the transformation required by the
+location inference algorithm.
+
+%
+Note that value restriction on polymorphism in ML programming
+languages is well-known.
+%
+It is a simple but effective strategy to have both polymorphism and
+side effects such as mutable references with no conflicts between
+them.
+
+%
+The rpc calculus itself may look as a pure lambda calculus with no
+side effects since it does not have mutable references.
+%
+But an unusual notion of side effects arises as soon as you try to
+associate application terms with static locations.
+%
+Polymorphic terms can be used here and there independelty of
+locations.
+%
+But when we relax the value restriction on the polymorphism, the body
+of polymorphic terms might not have the form of values any more.
+%
+It can be an application term, which is not a value.
+%
+The application term can be also associated with a particular static
+location.
+%
+That is, the body of a polymorphic term can be an application term
+that must be evaluated only at that particular static location.
+%
+The use of polymorphic terms at arbitrary locations can conflict with
+a requirement for specific static location associated with applicaion
+terms inside the polymorphic terms.
+%
+This needs to be addressed when we relax the value restriction on the
+polymorphism in the rpc calculus.
+
+%
+A simple idea is to enforce dynamic location checking whenever such a
+conflict arises.
+%
+Using this idea, we are able to design a new rpc calculus that relaxes
+the value restriction on polymorphism.
+
+%
+Figure \ref{fig:polyrpcm} presents terms and types in a new relaxed
+polymorphic RPC calculus together wtih a dynamic semantics.
+
+%
+Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
+
+% - An Account for the Value Restriction
 
 % Application terms with locations : M N @ Loc (M must be applied to n only at Loc)
 % Prove the type soundness again.
 
-\subsection{Breaking the Type Soundness by Relaxation}
+% -Breaking the Type Soundness by Relaxation
 
 % Relax the value restriction as /\a.M and /\l.M
 % Show a counterexample that is type-checked but get stuck by
 % an attempt to apply M to N at other location than Loc.
 
-\subsection{An Effectful Polymorphic RPC Calculus with No Value Restriction}
+% - a design
 
 % Application terms with locations : M N @ Loc (M must be applied to n only at Loc)
 % Relax the value restriction as /\a.M and /\l.M
@@ -1590,9 +1682,174 @@ preserving the type soundness.
 % The idea is simple: Make it be dynamically located!
 % Prove the type soundness
 
+
+\begin{figure}[h]
+\centering  
+\begin{tabular}{ l  l  r  c  l }
+\multicolumn{5}{l}{\textbf{Syntax}} \\
+ & Location & $a,b$   & $::=$ & $\client \ \ | \  \  \server$ \\
+ &          & $\Loc$  & $::=$  & $a  \ \ |  \ \ l$ \\
+ & Term     & $L,M,N$ & $::=$  & $V  \ | \  L \ M \ {\color{red}\at{\ \Loc}} \ | \  M[A]  \ | \  M[\Loc]  \ | \  (L,M)  \ |  \ \pi_i(M)$ \\
+ & Value & $V,W$ & $::=$ & $x  \ \ |  \ \ \lambda^{Loc} x.M  \ \ |  \ \ \Lambda\alpha._{\color{red} \eff} {\color{red} M}  \ \ |  \ \ \Lambda l._{\color{red} \eff} {\color{red} M} \ | \ (V,W)$ \\
+ & Context  & $\eff$  & $::=$ & $l$ \\[\ruleverticalsep]
+\multicolumn{5}{l}{\textbf{Semantics}} \\
+\end{tabular}
+
+\begin{tabular}{p{\rulewidth} }
+  {
+    \begin{prooftree}
+      \infer[left label=(Abs)]0{ \evalRPC{\lamL{b}{x}{M}}{a}{\lamL{b}{x}{M} }}
+    \end{prooftree}
+    \ \ \ 
+    \begin{prooftree}
+      \hypo{ \evalRPC{L}{a}{\lamL{b}{x}{N}} }
+      \hypo{ \evalRPC{M}{a}{W} }
+      \hypo{ \evalRPC{N\subst{W}{x}}{b}{V}  }
+      \infer[left label=(App)]3{ \evalRPC{L \ M \ {\color{red} \at{\ a}}}{a}{V}  }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \infer[left label=(Tabs)]0{ \evalRPC{\Lambda\alpha._{\color{red} \eff}M}{a}{\Lambda\alpha._{\color{red} \eff}M }}
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \evalRPC{M}{a}{\Lambda\alpha._{\color{red} \eff}N} }
+      \hypo{ \evalRPC{N\subst{B}{\alpha}{\color{red} \subst{a}{\eff}}}{a}{V}}
+      \infer[left label=(Tapp)]2{ \evalRPC{M[B]}{a}{V} }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \infer[left label=(Labs)]0{ \evalRPC{\Lambda l._{\color{red} \eff}M}{a}{\Lambda l._{\color{red} \eff}M} }
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \evalRPC{M}{a}{\Lambda l._{\color{red} \eff}{N}} }
+      \hypo{ \evalRPC{N\subst{b}{l}{\color{red}\subst{a}{\eff}}}{a}{V}  }
+      \infer[left label=(Lapp)]2{ \evalRPC{M[b]}{a}{V}  }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \evalRPC{L}{a}{V} }
+      \hypo{ \evalRPC{M}{a}{W} }
+      \infer[left label=(Pair)]2{ \evalRPC{(L,M)}{a}{(V,W) }}
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \evalRPC{M}{a}{(V_1,V_2)}  \ \ \ i\in\{1,2\}}
+      \infer[left label=(Proj-i)]1{ \evalRPC{\pi_i(M)}{a}{V_i}  }
+    \end{prooftree}
+  }
+\end{tabular}
+\caption{The polymorphic  RPC calculus with no value restriction on polymorphism: \polyrpcM}
+\label{fig:polyrpcm}
+\end{figure}
+
+
+\begin{figure}[h]
+\centering            
+\begin{tabular}{l l r c l}
+\multicolumn{5}{l}{\textbf{Types}} \\
+& Type & $A,B,C$ & $::=$
+& $base  \ \ | \ \  A\funL{Loc}B  \ \ | \ \  \alpha  \ \ | \ \  A \times B  \ \ | \ \  \forall\alpha._{\color{red} \eff} A 	\ \ | \ \  \forall l._{\color{red} \eff} A $ \\
+& Type environment & $\Gamma$ & $::=$
+& $\emptyset \ \ | \ \ \Gamma, x:A \ \ | \ \ \Gamma, \alpha \ \ | \ \ \Gamma, l$ \\[\ruleverticalsep]
+\multicolumn{5}{l}{\textbf{Typing Rules}} \\
+\end{tabular}
+
+\begin{tabular}{p{\rulewidth}}
+  {
+    \begin{prooftree}
+      \hypo{  \tyenv(x)=A }
+      \infer[left label=(T-Var)]1{ \typing{\tyenv}{\Loc}{x}{A} }
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \typing{\tyenvExt{x}{A}}{\Loc}{M}{B} }
+      %\hypo{ flv(\Loc) \subseteq \Delta  }
+      \infer[left label=(T-Abs)]1{ \typing{\tyenv}{\Loc'}{\lamL{\Loc}{x}{M}}{A\funL{\Loc}B} }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{  \typing{\tyenv}{\Loc}{L}{A\funL{\Loc'}B } }
+      \hypo{  \typing{\tyenv}{\Loc}{M}{A} }
+      %\hypo{  flv{A}\cup flv(\Loc') \subseteq \tyenv  }
+      \infer[left label=(T-App)]2{ \typing{\tyenv}{\Loc}{L \ M \ \at{\ \Loc}}{B}   }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{  \typing{\tyenv,\alpha{\color{red},\eff}}{\color{red}\eff}{M}{A} }
+      \infer[left label=(T-Tabs)]1{ \typing{\tyenv}{\Loc}{\Lambda\alpha._{\color{red} \eff} M}{\forall\alpha._{\color{red} \eff} A}   }
+    \end{prooftree}
+    \ \ \
+    \begin{prooftree}
+      \hypo{  \typing{\tyenv}{\Loc}{M}{\forall\alpha._{\color{red} \eff} A} }
+      \infer[left label=(T-Tapp)]1{ \typing{\tyenv}{\Loc}{M[B]}{A\subst{B}{\alpha}{\color{red}\subst{\Loc}{\eff}}}   }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \typing{\tyenvExtWith{l}{\color{red},\eff}}{\color{red}\eff}{M}{A} }
+      %\hypo{ l \not\in flv(\varenv)\cup flv(\tyenv) \cup flv(\Loc) }
+      \infer[left label=(T-Labs)]1{ \typing{\tyenv}{\Loc}{\Lambda l._{\color{red} \eff} M}{\forall l._{\color{red} \eff} A }}
+    \end{prooftree}
+    \ \ \
+    \begin{prooftree}
+      \hypo{ \typing{\tyenv}{\Loc}{M}{\forall l._{\color{red} \eff} A } }
+      % \hypo{ flv(\Loc')\subseteq\tyenv  }
+      \infer[left label=(T-Lapp)]1{ \typing{\tyenv}{\Loc}{M[\Loc']}{A\subst{\Loc'}{l}{\color{red}\subst{\Loc}{\eff}}}}
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \typing{\tyenv}{Loc}{L}{A} }
+      \hypo{ \typing{\tyenv}{Loc}{M}{B} }
+      \infer[left label=(T-Pair)]2{ \typing{\tyenv}{Loc}{(L,M)}{ A \times B }}
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \typing{\tyenv}{Loc}{M}{A_1 \times A_2} \ \ \ i\in\{1,2\} }
+      \infer[left label=(T-Proj-i)]1{ \typing{\tyenv}{Loc}{\pi_i(M)}{ A_i } }
+    \end{prooftree}
+  }
+\end{tabular}
+\caption{A type system for \polyrpcM}
+\label{fig:polyrpcmtysystem}
+\end{figure}
+
+
 \end{document}
 
 %% <Memo>
 %% I1: /\a.{eff} M : polymorphic type abstractions allowing effects by eff
 %% I2: Arrow A Loc B  as  A --Loc--> B  and forall l. Location l -> Arrow A l B
 
+%% %
+%% Of course, the value restriction is relevant to the type safe
+%% polymorphic effectful features.
+%% %
+%% This will be discussed later after we discuss an unusual notion of
+%% value restriction that arises in the polymorphic RPC calculus.
+
+%% %
+%% The type soundness (Theorem \ref{thm:typesoundness}) actually proves
+%% that after compiling typed application terms into local, remote, and
+%% dynamically determined procedure calls, each kind of procedure calls
+%% will never be changed in runtime.
+%% %
+%% However, it does not tell why any attempts to relax the value
+%% restriction can break the type soundness of the polymorphic RPC
+%% calculus at all.
