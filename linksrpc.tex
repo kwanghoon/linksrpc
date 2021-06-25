@@ -1567,6 +1567,25 @@ feature of the statically located context of application terms.
 \subsection{Why is naively relaxing value restriction on polymorphism dangerous?}
 
 %
+In a navie adoption of the existing typing rules (T-Tabs) and
+(T-Labs), the location of a polymorphic term $\Loc$ becomes that of
+the body of the polymorphic term.
+\[
+    \begin{prooftree}
+      \hypo{  \typing{\tyenv}{\Loc}{M}{A}}
+      \infer[left label=(T-Tabs)]1{ \typing{\tyenv}{\Loc}{\Lambda\alpha. M}{\forall\alpha. A}   }
+    \end{prooftree}
+    \ \ \
+    \begin{prooftree}
+      \hypo{ \typing{\tyenvExtWith{l}}{\Loc}{M}{A}}
+      \infer[left label=(T-Labs)]1{ \typing{\tyenv}{\Loc}{\Lambda l. M}{\forall l. A }}
+    \end{prooftree}    
+\]
+
+%
+Let us see how this naive typing rules can break the type safety of
+statically located contexts of applications.
+%
 Suppose the following piece of a polymorphic term $g$ of type
 $\forall\alpha.\alpha\funL{\server}\alpha$ is located in the client.
 \[
@@ -1582,6 +1601,7 @@ is located at the client.
 %
 This application is viewed as a remote
 procedure call since a server function is invoked at the client.
+
 %
 However, this view can be broken when this polymorphic term is used in
 differently located contexts, that is, at the server that requires
@@ -1639,18 +1659,22 @@ for typing the body of type and location abstractions as follows.
     \end{prooftree}    
 \]
 %    
-Recall that the existing typing rules have $\Loc$ instead of the fresh
-location variable.
+Note that the fresh location variable replaces the lexically inherited
+location $\Loc$ in the naive typing rules.
 %
 Using this idea, we are able to design a new RPC calculus that relaxes
 the value restriction on polymorphism.
 
 %
-Users have only to adopt the two typing rules (T-Tabs) and (T-Labs) to
-make use of relaxed polymorphic RPC calculuse.
+Users in need of relaxed polymorphism in the RPC calculus have only to
+adopt the two typing rules (T-Tabs) and (T-Labs) as this.
 %
 But to prove whether this idea does make the relaxed calculus be type
-safe involves more, which will be explained in the next section.
+safe in terms of statically located contexts of applications involves
+more than this.
+%
+The next section will discuss how to prove the type safety of the
+relaxed polymorphic calculus.
 
 %% \subsection{Motivation}
 
