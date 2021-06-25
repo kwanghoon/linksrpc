@@ -1606,12 +1606,11 @@ as a remote procedure call is preserved.
 In the red colored part, however, the used location is the server,
 which is different from the declared location.
 %
-So, a view of the application of a client function to an integer 123
-as a remote procedure call is broken.
+So, the view as a remote procedure call is broken.
 
 %
 With value restriction on polymorphism, we will never face this
-problem because both $f \ [Int]$ and $f \ [String]$ are enforced to by
+problem because both $f \ [Int]$ and $f \ [String]$ are enforced to be
 syntactic values that are relocatable everywhere.
 %
 This explains why realaxing value restriction in the polymorphic RPC
