@@ -1567,13 +1567,11 @@ feature of the statically located context of application terms.
 \subsection{Why is naively relaxing value restriction on polymorphism dangerous?}
 
 %
-Suppose the following piece of a term is located in the client.
+Suppose the following piece of a polymorphic term $g$ of type
+$\forall\alpha.\alpha\funL{\server}\alpha$ is located in the client.
 \[
 \lambda^c z. \ \cdots \ \mbox{let} \  g \ = \ \Lambda\alpha. \ ( \  (\lambda^\server x:Int. \ \lambda^\server y:\alpha. \ y) \ 123  \ ) \ \mbox{in} \ ...
 \]
-%
-The type of a polymorphic term $g$ is
-$\forall\alpha.\alpha\funL{\server}\alpha$.
 %
 By the statically located context of application terms, it means that
 the application of a server function to an integer 123
