@@ -1550,110 +1550,188 @@ $\evalRPC{M}{a}{V}$, then $\typing{\emptyset}{a}{V}{A}$.
 
 Recall that the polymorphic RPC calculus restricts the body of
 location and type abstractions to values as $\Lambda l. V$ and
-$\Lambda\l.V$.
+$\Lambda\alpha.V$.
 %
 This is a form of value restriction on polymorphism.
 %
 The value restriction is well-known in the ML programming language
-family for the purpose of integrating {\it effectful} features, such
-as mutable references, with polymorphism without breaking type safety.
+family for the purpose of integrating polymorphism with {\it
+  effectful} features, such as mutable references, without breaking
+type safety.
+
 %
-In the polymorphic RPC calculus, value restriction provides a simple
-mean to integrate the statically located context of application terms
-with polymorphism.
+In the polymorphic RPC calculus, value restriction also provides a
+simple mean to integrate polymorphism with a somewhat unusal effectful
+feature of the statically located context of application terms.
+
+\subsection{Why is naively relaxing value restriction on polymorphism dangerous?}
+
+%
+Suppose the following piece of a term is located in the client.
+\[
+\lambda^c z. \ \cdots \ \mbox{let} \  g \ = \ \Lambda\alpha. \ ( \  (\lambda^\server x:Int. \ \lambda^\server y:\alpha. \ y) \ 123  \ ) \ \mbox{in} \ ...
+\]
+%
+The type of a polymorphic term $g$ is
+$\forall\alpha.\alpha\funL{\server}\alpha$.
+%
+By the statically located context of application terms, it means that
+the application of a server function to an integer 123
+\[
+(\lambda^\server x:Int. \ \cdots) \ 123
+\]
+is located at the client.
+%
+This application is viewed as a remote
+procedure call since a server function is invoked at the client.
+%
+However, this view can be broken when this polymorphic term is used in
+differently located contexts, that is, at the server that requires
+this application to be a local procedure call. Consider
+%
+\[
+\cdots
+\ ( \ \lambda^\client f. \ {\color{green} f \ [Int]} \ 456 \ ) \ g \
+\cdots
+\ ( \ \lambda^\server f. \ {\color{red} f \ [String]} \ ``456'' \ ) \ g \
+\cdots 
+\]
+%
+In the green colored part, the polymorphic term happens to be used at
+the same location as the declared one.
+%
+So, a view of the application of a server function to an integer 123
+as a remote procedure call is preserved.
+%
+In the red colored part, however, the used location is the server,
+which is different from the declared location.
+%
+So, a view of the application of a client function to an integer 123
+as a remote procedure call is broken.
+
+%
+With value restriction on polymorphism, we will never face this
+problem because both $f \ [Int]$ and $f \ [String]$ are enforced to by
+syntactic values that are relocatable everywhere.
+%
+This explains why realaxing value restriction in the polymorphic RPC
+calculus can be dangerous to statically located contexts of
+applications.
+
+
 %
 This section will discuss an extended polymorphic RPC calculus
 supporting $\Lambda l.M$ and $\Lambda l.M$ with no value restriction
 on polymorphism.
 %
-We discuss why this relaxation can break the type safety unless it is
-carefully dealt with and how the relaxed calculus is designed to
-preserve the type safety.
-
-\subsection{Motivation}
-
-%
-There are two motivations on studying value restriction on
-polymorphism in the RPC calculus and its relaxation.
-%
-A motivation comes from a theoretical interest.
-%
-The existing studies on the typed RPC calculus have not clearly
-explained what value restriction on polymorphism means to the calculus
-itself.
-%
-They explained it indirectly or implicitly by compiling it into
-client-server calculi where application terms are compiled accordingl
-to statically determined location contexts.
-%
-The correctness of the
-compilation can explain the notion of value restriction in the RPC
-calculus.
-
-%
-The other motivation comes from a practical purpose.
-%
-A goal of location inference is to infer as many static location as
-possible from RPC programs with minimal location annotations like the
-Links programs.
-%
-In Links, location annotations are so minimal that programmers might
-not feel so hard in writting location annotations.
-%
-We are designing a location inference algorithm for Links-like
-programs to discover as many static location contexts as possbile.
-%
-One problem with this algorithm is that it requires a program
-transformation for location adjustment.
-%
-This can break the value restriction on polymorphism in the RPC
-calculus.
-%
-So there is a need to take a look at whether the value restriction can
-be relaxed enough to permit the transformation required by the
-location inference algorithm.
-
-%
-Note that value restriction on polymorphism in ML programming
-languages is well-known.
-%
-It is a simple but effective strategy to have both polymorphism and
-side effects such as mutable references with no conflicts between
-them.
-
-%
-The RPC calculus itself may look as a pure lambda calculus with no
-side effects since it does not have mutable references.
-%
-But an unusual notion of side effects arises as soon as you try to
-associate application terms with static locations.
-%
-Polymorphic terms can be used here and there independelty of
-locations.
-%
-But when we relax the value restriction on the polymorphism, the body
-of polymorphic terms might not have the form of values any more.
-%
-It can be an application term, which is not a value.
-%
-The application term can be also associated with a particular static
-location.
-%
-That is, the body of a polymorphic term can be an application term
-that must be evaluated only at that particular static location.
-%
-The use of polymorphic terms at arbitrary locations can conflict with
-a requirement for specific static location associated with applicaion
-terms inside the polymorphic terms.
-%
-This needs to be addressed when we relax the value restriction on the
-polymorphism in the RPC calculus.
-%
 A simple idea is to enforce dynamic location checking whenever such a
 conflict arises.
 %
+This enforcment can be implemented by having a fresh location $l_0$
+for typing the body of type and location abstractions as follows.
+%
+\[
+    \begin{prooftree}
+      \hypo{  \typing{\tyenv}{l_0}{M}{A} \ \ \ \mbox{fresh} \ l_0}
+      \infer[left label=(T-Tabs)]1{ \typing{\tyenv}{\Loc}{\Lambda\alpha. M}{\forall\alpha. A}   }
+    \end{prooftree}
+    \ \ \
+    \begin{prooftree}
+      \hypo{ \typing{\tyenvExtWith{l}}{l_0}{M}{A}  \ \ \ \mbox{fresh} \ l_0}
+      \infer[left label=(T-Labs)]1{ \typing{\tyenv}{\Loc}{\Lambda l. M}{\forall l. A }}
+    \end{prooftree}    
+\]
+%    
+Recall that the existing typing rules have $\Loc$ instead of the fresh
+location variable.
+%
 Using this idea, we are able to design a new RPC calculus that relaxes
 the value restriction on polymorphism.
+
+%% \subsection{Motivation}
+
+%% %
+%% There are two motivations on studying value restriction on
+%% polymorphism in the RPC calculus and its relaxation.
+%% %
+%% A motivation comes from a theoretical interest.
+%% %
+%% The existing studies on the typed RPC calculus have not clearly
+%% explained what value restriction on polymorphism means to the calculus
+%% itself.
+%% %
+%% They explained it indirectly or implicitly by compiling it into
+%% client-server calculi where application terms are compiled accordingl
+%% to statically determined location contexts.
+%% %
+%% The correctness of the
+%% compilation can explain the notion of value restriction in the RPC
+%% calculus.
+
+%% %
+%% The other motivation comes from a practical purpose.
+%% %
+%% A goal of location inference is to infer as many static location as
+%% possible from RPC programs with minimal location annotations like the
+%% Links programs.
+%% %
+%% In Links, location annotations are so minimal that programmers might
+%% not feel so hard in writting location annotations.
+%% %
+%% We are designing a location inference algorithm for Links-like
+%% programs to discover as many static location contexts as possbile.
+%% %
+%% One problem with this algorithm is that it requires a program
+%% transformation for location adjustment.
+%% %
+%% This can break the value restriction on polymorphism in the RPC
+%% calculus.
+%% %
+%% So there is a need to take a look at whether the value restriction can
+%% be relaxed enough to permit the transformation required by the
+%% location inference algorithm.
+
+%% %
+%% Note that value restriction on polymorphism in ML programming
+%% languages is well-known.
+%% %
+%% It is a simple but effective strategy to have both polymorphism and
+%% side effects such as mutable references with no conflicts between
+%% them.
+
+%% %
+%% The RPC calculus itself may look as a pure lambda calculus with no
+%% side effects since it does not have mutable references.
+%% %
+%% But an unusual notion of side effects arises as soon as you try to
+%% associate application terms with static locations.
+%% %
+%% Polymorphic terms can be used here and there independelty of
+%% locations.
+%% %
+%% But when we relax the value restriction on the polymorphism, the body
+%% of polymorphic terms might not have the form of values any more.
+%% %
+%% It can be an application term, which is not a value.
+%% %
+%% The application term can be also associated with a particular static
+%% location.
+%% %
+%% That is, the body of a polymorphic term can be an application term
+%% that must be evaluated only at that particular static location.
+%% %
+%% The use of polymorphic terms at arbitrary locations can conflict with
+%% a requirement for specific static location associated with applicaion
+%% terms inside the polymorphic terms.
+%% %
+%% This needs to be addressed when we relax the value restriction on the
+%% polymorphism in the RPC calculus.
+%% %
+%% A simple idea is to enforce dynamic location checking whenever such a
+%% conflict arises.
+%% %
+%% Using this idea, we are able to design a new RPC calculus that relaxes
+%% the value restriction on polymorphism.
 
 \subsection{A Relaxed Polymorphic RPC Calculus}
 
