@@ -1649,12 +1649,12 @@ for typing the body of type and location abstractions as follows.
 %
 \[
     \begin{prooftree}
-      \hypo{  \typing{\tyenv}{l_0}{M}{A} \ \ \ \mbox{fresh} \ l_0}
+      \hypo{  \typing{\tyenv,l_0}{l_0}{M}{A} \ \ \ \mbox{fresh} \ l_0}
       \infer[left label=(T-Tabs)]1{ \typing{\tyenv}{\Loc}{\Lambda\alpha. M}{\forall\alpha. A}   }
     \end{prooftree}
     \ \ \
     \begin{prooftree}
-      \hypo{ \typing{\tyenvExtWith{l}}{l_0}{M}{A}  \ \ \ \mbox{fresh} \ l_0}
+      \hypo{ \typing{\tyenvExtWith{l},l_0}{l_0}{M}{A}  \ \ \ \mbox{fresh} \ l_0}
       \infer[left label=(T-Labs)]1{ \typing{\tyenv}{\Loc}{\Lambda l. M}{\forall l. A }}
     \end{prooftree}    
 \]
