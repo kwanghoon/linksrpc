@@ -1676,48 +1676,48 @@ more than this.
 The next section will discuss how to prove the type safety of the
 relaxed polymorphic calculus.
 
-%% \subsection{Motivation}
+\subsection{Why does relaxing value restriction onn polymorphism interest us?}
 
-%% %
-%% There are two motivations on studying value restriction on
-%% polymorphism in the RPC calculus and its relaxation.
-%% %
-%% A motivation comes from a theoretical interest.
-%% %
-%% The existing studies on the typed RPC calculus have not clearly
-%% explained what value restriction on polymorphism means to the calculus
-%% itself.
-%% %
-%% They explained it indirectly or implicitly by compiling it into
-%% client-server calculi where application terms are compiled accordingl
-%% to statically determined location contexts.
-%% %
-%% The correctness of the
-%% compilation can explain the notion of value restriction in the RPC
-%% calculus.
+%
+There are two motivations on studying value restriction on
+polymorphism in the RPC calculus and its relaxation.
+%
+A motivation comes from a theoretical interest.
+%
+The existing studies on the typed RPC calculus have not clearly
+explained what value restriction on polymorphism means to the calculus
+itself.
+%
+They explained it indirectly or implicitly by compiling it into
+client-server calculi where application terms are compiled according
+to statically determined location contexts.
+%
+The correctness of the
+compilation can explain the notion of value restriction in the RPC
+calculus.
 
-%% %
-%% The other motivation comes from a practical purpose.
-%% %
-%% A goal of location inference is to infer as many static location as
-%% possible from RPC programs with minimal location annotations like the
-%% Links programs.
-%% %
-%% In Links, location annotations are so minimal that programmers might
-%% not feel so hard in writting location annotations.
-%% %
-%% We are designing a location inference algorithm for Links-like
-%% programs to discover as many static location contexts as possbile.
-%% %
-%% One problem with this algorithm is that it requires a program
-%% transformation for location adjustment.
-%% %
-%% This can break the value restriction on polymorphism in the RPC
-%% calculus.
-%% %
-%% So there is a need to take a look at whether the value restriction can
-%% be relaxed enough to permit the transformation required by the
-%% location inference algorithm.
+%
+The other motivation comes from a practical purpose.
+%
+A goal of location inference is to infer as many static location as
+possible from RPC programs with minimal location annotations like the
+Links programs.
+%
+In Links, location annotations are so minimal that programmers might
+not feel so hard in writting location annotations.
+%
+We are designing a location inference algorithm for Links-like
+programs to discover as many static location contexts as possbile.
+%
+One problem with this algorithm is that it requires a program
+transformation for location adjustment.
+%
+This can break the value restriction on polymorphism in the RPC
+calculus.
+%
+So there is a need to take a look at whether the value restriction can
+be relaxed enough to permit the transformation required by the
+location inference algorithm.
 
 %% %
 %% Note that value restriction on polymorphism in ML programming
