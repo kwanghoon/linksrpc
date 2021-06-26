@@ -1554,20 +1554,21 @@ $\Lambda\alpha.V$.
 %
 This is a form of value restriction on polymorphism.
 %
-The value restriction is well-known in the ML programming language
-family for the purpose of integrating polymorphism with {\it
+Value restriction on polymorphism is well-known in the ML programming
+language family for the purpose of integrating polymorphism with {\it
   effectful} features, such as mutable references, without breaking
 type safety.
 
 %
-In the polymorphic RPC calculus, value restriction also provides a
-simple mean to integrate polymorphism with a somewhat unusal effectful
-feature of the statically located context of application terms.
+In the polymorphic RPC calculus, value restriction is a mean to
+integrate type and location polymorphism with a somewhat unusual
+effectful feature of the statically located context of application
+terms.
 
 \subsection{Why is naively relaxing value restriction on polymorphism dangerous?}
 
 %
-In a navie adoption of the existing typing rules (T-Tabs) and
+In a naive adoption of the existing typing rules (T-Tabs) and
 (T-Labs), the location of a polymorphic term $\Loc$ becomes that of
 the body of the polymorphic term.
 \[
@@ -1631,7 +1632,7 @@ With value restriction on polymorphism, we will never face this
 problem because both $f \ [Int]$ and $f \ [String]$ are enforced to be
 syntactic values that are relocatable everywhere.
 %
-This explains why realaxing value restriction in the polymorphic RPC
+This explains why relaxing value restriction in the polymorphic RPC
 calculus can be dangerous to statically located contexts of
 applications.
 
@@ -1644,7 +1645,7 @@ on polymorphism.
 A simple idea is to enforce dynamic location checking whenever such a
 conflict arises.
 %
-This enforcment can be implemented by having a fresh location $l_0$
+This enforcement can be implemented by having a fresh location $l_0$
 for typing the body of type and location abstractions as follows.
 %
 \[
@@ -1676,7 +1677,7 @@ more than this.
 The next section will discuss how to prove the type safety of the
 relaxed polymorphic calculus.
 
-\subsection{Why does relaxing value restriction onn polymorphism interest us?}
+\subsection{Why does relaxing value restriction on polymorphism interest us?}
 
 %
 There are two motivations on studying value restriction on
@@ -1704,10 +1705,10 @@ possible from RPC programs with minimal location annotations like the
 Links programs.
 %
 In Links, location annotations are so minimal that programmers might
-not feel so hard in writting location annotations.
+not feel so hard in writing location annotations.
 %
 We are designing a location inference algorithm for Links-like
-programs to discover as many static location contexts as possbile.
+programs to discover as many static location contexts as possible.
 %
 One problem with this algorithm is that it requires a program
 transformation for location adjustment.
@@ -1765,7 +1766,7 @@ location inference algorithm.
 
 %
 Figure \ref{fig:polyrpcm} presents terms and types in a new relaxed
-polymorphic RPC calculus together wtih a dynamic semantics.
+polymorphic RPC calculus together with a dynamic semantics.
 
 %
 Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
