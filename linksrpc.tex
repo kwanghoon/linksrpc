@@ -94,6 +94,7 @@
 \newcommand{\typedrpc}{$\lambda_{rpc}^{typed}$\xspace}
 \newcommand{\polyrpc}{$\lambda_{rpc}^{\forall}$\xspace}
 \newcommand{\polyrpcM}{$\lambda_{rpc}^{\forall,M}$\xspace}
+\newcommand{\polyrpcA}{$\lambda_{rpc}^{\forall,@}$\xspace}
 \newcommand{\linksrpc}{$\lambda_{rpc}^{Links}$\xspace}
 \newcommand{\kindedpolyrpc}{$\lambda_{rpc}^{\forall,k}$\xspace}
 
@@ -1249,7 +1250,7 @@ We will continue to study to solve this problem.
 %% \paragraph{Acknowledgements} \lipsum[6]
 
 % \newpage
-\bibliography{polyrpc2021}
+\bibliography{linksrpc}
 
 \appendix
 
@@ -1638,7 +1639,7 @@ contexts of applications.
 
 
 %
-This section will discuss an extended polymorphic RPC calculus
+This section will discuss a relaxed polymorphic RPC calculus
 supporting $\Lambda l.M$ and $\Lambda l.M$ with no value restriction
 on polymorphism.
 %
@@ -1663,8 +1664,10 @@ for typing the body of type and location abstractions as follows.
 Note that the fresh location variable replaces the lexically inherited
 location $\Loc$ in the naive typing rules.
 %
-Using this idea, we are able to design a new RPC calculus that relaxes
-the value restriction on polymorphism.
+Using this idea produces a new RPC calculus that relaxes the value
+restriction on polymorphism.
+%
+Let us call it a {\it relaxed polymorphic RPC calculus}, denoted by \polyrpcM.
 
 %
 Users in need of relaxed polymorphism in the RPC calculus have only to
@@ -1673,9 +1676,11 @@ adopt the two typing rules (T-Tabs) and (T-Labs) as this.
 But to prove whether this idea does make the relaxed calculus be type
 safe in terms of statically located contexts of applications involves
 more than this.
+
 %
-The next section will discuss how to prove the type safety of the
-relaxed polymorphic calculus.
+We will show how the change of (T-Tabs) and (T-Labs) can guarantee the
+type safety of the relaxed polymorphic calculus after discussing the
+motivation on why the relaxed polymorphic calculus is useful.
 
 \subsection{Why does relaxing value restriction on polymorphism interest us?}
 
@@ -1701,29 +1706,28 @@ calculus.
 The other motivation comes from a practical purpose.
 %
 A goal of multi-tier programming languages is to provide programmers
-the illusion that they feel like they are writing programs using a
-single-tier programming language.
+the illusion of just using a single-tier programming language.
 %
-Therefore, it is important to ensure that having this polymorphically
-located feature does not prevent the other features in single-tier
-programming languages.
+To achieve this, the polymorphic location feature should go well with
+the other features in single-tier programming languages and it should
+not prevent them from being used as in the programming languages.
 %
 For example, there have been studies on relaxing value restrictions in
 polymorphism in several cases as this: relaxing value restriction in
 polymorphism for constructor and accessor functions, polymorphic
-variants, and semi-explicit polymorphism [Jacques Garrigue], relaxing
-value restriction for algebraic effects and handlers [Ohad Kammar and
-  Matija Pretnar], [Taro Sekiyama and Atsushi Igarashi], [Taro
-  Sekiyama, Takeshi Tsukada, and Atsushi Igarashi].
+variants, and semi-explicit polymorphism
+\cite{10.1007/978-3-540-24754-8_15}; and for algebraic effects and
+handlers \cite{kammar_pretnar_2017},
+\cite{10.1007/978-3-030-17184-1_13}, \cite{10.1145/3408999}.
 %  
 To integrate the feature of location polymorphism with these relaxed
 features, there is a need to investigate whether the feature of
 location polymorphism is type-safe.
 %
 
-It is also worth thinking about whether the value restriction in
-polymorphism is useful solely for the polymorphic RPC calculus itself
-without considering the other features.
+It is also worth thinking about whether relaxing value restriction is
+useful solely for the polymorphic RPC calculus itself without
+considering the other features.
 %
 We believe that the usefulness of the relaxed location polymorphism
 comes indirectly as will be explained in the following.
@@ -1791,12 +1795,70 @@ location inference algorithm.
 %% Using this idea, we are able to design a new RPC calculus that relaxes
 %% the value restriction on polymorphism.
 
-\subsection{A Relaxed Polymorphic RPC Calculus}
+\subsection{A relaxed polymorphic RPC calculus augmented with static location contexts}
 
 %
-Figure \ref{fig:polyrpcm} presents terms and types in a new relaxed
-polymorphic RPC calculus together with a dynamic semantics.
+A counterexample was shown previously to reveal a breach of the type
+safety when one would naively attempt to relax value restriction n the
+polymorphic RPC calculus, but it has not been shown the type safety of
+the properly relaxed polymorphic RPC calculus.
+%
 
+The idea is to associate locations $\Loc$ with application terms $L
+\ M$ declaring that these applications are always evaluated at the
+locations, as follows.
+\[
+L \ M \ @ \ \Loc
+\]
+
+%
+This declaration is verified in runtime by the evaluation rule (App):
+\[
+    \begin{prooftree}
+      \hypo{ \evalRPC{L}{a}{\lamL{b}{x}{N}} }
+      \hypo{ \evalRPC{M}{a}{W} }
+      \hypo{ \evalRPC{N\subst{W}{x}}{b}{V}  }
+      \infer[left label=(App)]3{ \evalRPC{L \ M \ {\color{red} \at{\ a}}}{a}{V}  }
+    \end{prooftree}
+\]
+%
+That is, the declarred location must be conincide with the location of
+evaluation.
+%
+Otherwise, the application term would get stuck as $L \ M
+\ \at{\ a}\not\Downarrow_{b}$ for $a\not=b$.
+
+%
+For example, when the client location was declared to be associated
+with this application,
+\[
+\lambda^c z. \ \cdots \ \mbox{let} \  g \ = \ \Lambda\alpha. \ ( \  (\lambda^\server x:Int. \ \lambda^\server y:\alpha. \ y) \ 123 \ \at{\ c} \ ) \ \mbox{in} \ ...
+\]
+the evaluation would get stuck at the server location as
+
+\[
+\ ( \ \lambda^\server f. \ {\color{red} f \ [String]} \ ``456'' \ ) \ g \
+\]
+by
+\[
+(\lambda^\server x:Int. \ \lambda^\server y:\alpha. \ y) \ 123 \ \at{\ \client} \ \not\Downarrow_\server.
+\]
+
+%
+Thus, the augmented relaxed polymorphic RPC calculus makes explicit
+the declared location of applications and checking its validity in
+runtime.
+%
+This is useful when we prove the type safety of the relaxed
+polymorphic RPC calculus by showing that the evaluation of \polyrpcM
+is simulated by that of \polyrpcA especially in terms of the validity
+of declared locations of applications in runtime.
+
+%
+Now let us defined the augmented relaxed polymorphic RPC calculus. 
+%
+Figure \ref{fig:polyrpcm} presents terms and a dynamic semantics for
+an {\it augmented relaxed polymorphic RPC calculus}, \polyrpcA.
 %
 Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
 
@@ -1884,7 +1946,7 @@ Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
     \end{prooftree}
   }
 \end{tabular}
-\caption{The polymorphic  RPC calculus with no value restriction on polymorphism: \polyrpcM}
+\caption{The polymorphic  RPC calculus with no value restriction on polymorphism: \polyrpcA}
 \label{fig:polyrpcm}
 \end{figure}
 
@@ -1964,10 +2026,14 @@ Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
     \end{prooftree}
   }
 \end{tabular}
-\caption{A type system for \polyrpcM}
+\caption{A type system for \polyrpcA}
 \label{fig:polyrpcmtysystem}
 \end{figure}
 
+Now we define three logical relations between the two calculus as
+$R(A,B)$ on types, $R(\tyenv_1, \tyenv_2)$ on typing environments, and
+$R(\typing{\tyenv_1}{\Loc_1}{M_1}{A_1},\typing{\tyenv_2}{\Loc_2}{M_2}{A_2})$
+on typing derivations (or on terms).
 
 \end{document}
 
