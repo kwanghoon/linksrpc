@@ -21,8 +21,8 @@
 	unicode,
 %	colorlinks,
 %	breaklinks,
-%	urlcolor=cyan, 
-%	linkcolor=blue, 
+%	urlcolor=cyan,
+%	linkcolor=blue,
 	pdfauthor={Author One, Author Two, Author Three},
 	pdftitle={A simple article template},
 	pdfsubject={A simple article template},
@@ -38,7 +38,7 @@
 \usepackage[sort&compress,numbers,square]{natbib}
 %\bibliographystyle{mplainnat}
 \bibliographystyle{plain}
-  
+
 % Theorem, Lemma, etc
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}
@@ -307,14 +307,14 @@
 \begin{document}
 
 \maketitle
-	
+
 \begin{abstract}
 %
 This progress report describes an attempt to recover static location
 contexts in the Links-RPC calculus, which captures the RPC aspect of
 Links, by compiling to the polymorphic RPC calculus and back to
 itself.
-%  
+%
 Currently, the proposed idea is limited to the rank-1 subset of the
 Links-RPC calculus.
 %
@@ -329,7 +329,7 @@ calculus by solving this problem.
 \end{abstract}
 
 %\tableofcontents
-	
+
 \section{Introduction}
 \label{sec:intro}
 
@@ -523,7 +523,7 @@ $map \ Client$ or $map \ Server$ by applying it to one of the data
 constructors that represent client and server locations.
 %
 Interestingly, the polymorphic map function can still run as a local
-computation. 
+computation.
 %
 So, there is no need to refer to $z$ in the map example.
 
@@ -587,7 +587,7 @@ Let us call it a Links-RPC calculus, \linksrpc.
 
 
 \begin{figure}[h]
-\centering  
+\centering
 \begin{tabular}{ l  l  r  c  l }
 \multicolumn{5}{l}{\textbf{Syntax}} \\
  & Location & $a,b$   & $::=$ & $\client \ \ | \  \  \server$ \\
@@ -819,7 +819,7 @@ into \polyrpc as shown in Figure~\ref{fig:compilationoflinksrpc}.
       \end{prooftree}
     }
   \\[\ruleverticalsep]
-%  
+%
   $\judgcomp{ \typing{\tyenv}{}{\lamL{a}{x}{M}}{A \rightarrow B} }{\Delta,\Loc}$ & $=$
   & let $\typing{\Delta,x:\linkstycomp{A}{a}}{a}{M'}{D}$
     \ = \ $\judgcomp{ \typing{\tyenvExt{x}{A}}{}{M}{B} }{(\Delta,x:\linkstycomp{A}{a}),a}$
@@ -827,7 +827,7 @@ into \polyrpc as shown in Figure~\ref{fig:compilationoflinksrpc}.
   &
   & $\typing{\Delta}{\Loc}{\lamL{a}{x}{M'}}{\linkstycomp{A}{a} \funL{a} D}$
   \\[\ruleverticalsep]
-%  
+%
   $\judgcomp{ \typing{\tyenv}{}{\lamL{}{x}{M}}{A \rightarrow B} }{\Delta,\Loc}$ & $=$
   & let $l$ be fresh
   \\
@@ -847,9 +847,9 @@ into \polyrpc as shown in Figure~\ref{fig:compilationoflinksrpc}.
         \infer1{ \typing{\Delta}{\Loc}{(\Lambda l.\lamL{l}{x}{M'})[\Loc] }{ (\linkstycomp{A}{l}\funL{l}D)\subst{\Loc}{l}} }
       \end{prooftree}
     }
-  
+
   \\[\ruleverticalsephalf]
-%  
+%
   $\judgcomp{ \typing{\tyenv}{}{M \ N }{B} }{\Delta,\Loc}$ & $=$
   & let $\typing{\Delta}{\Loc}{M'}{C \funL{\Loc'} D}$
     \ = \ $\judgcomp{ \typing{\tyenv}{}{M}{A \rightarrow B} }{\Delta,\Loc}$
@@ -864,7 +864,7 @@ into \polyrpc as shown in Figure~\ref{fig:compilationoflinksrpc}.
   &
   & $\typing{\Delta}{\Loc}{M' \ N'}{D}$
   \\[\ruleverticalsep]
-%  
+%
   $\judgcomp{ \typing{\tyenv}{}{(M_1,M_2)}{A_1\times A_2} }{\Delta,\Loc}$ & $=$
   & let $\typing{\Delta}{\Loc}{M_i'}{A_i'}$
     \ = \ $\judgcomp{ \typing{\tyenv}{}{M_i}{A_i} }{\Delta,\Loc}$ for $i=1,2$
@@ -872,7 +872,7 @@ into \polyrpc as shown in Figure~\ref{fig:compilationoflinksrpc}.
   &
   & $\typing{\Delta}{\Loc}{(M_1',M_2')}{(A_1' \times A_2')}$
   \\[\ruleverticalsep]
-%  
+%
   $\judgcomp{ \typing{\tyenv}{}{\pi_i M}{A_i} }{\Delta,\Loc}$ & $=$
   & let $\typing{\Delta}{\Loc}{M'}{A_1' \times A_2'}$
     \ = \ $\judgcomp{ \typing{\tyenv}{}{M}{A_1\times A_2} }{\Delta,\Loc}$
@@ -880,7 +880,7 @@ into \polyrpc as shown in Figure~\ref{fig:compilationoflinksrpc}.
   &
   & $\typing{\Delta}{\Loc}{\pi_i \ M'}{A_i'}$
   \\[\ruleverticalsep]
-%  
+%
   $\judgcomp{ \typing{\tyenv}{}{\Lambda\alpha.V}{\forall\alpha.A} }{\Delta,\Loc}$ & $=$
   & let $\typing{\Delta,\alpha}{\Loc}{V'}{A'}$
     \ = \ $\judgcomp{ \typing{\tyenv,\alpha}{}{V}{A} }{(\Delta,\alpha),\Loc}$
@@ -888,7 +888,7 @@ into \polyrpc as shown in Figure~\ref{fig:compilationoflinksrpc}.
   &
   & $\typing{\Delta}{\Loc}{\Lambda\alpha.V'}{\forall\alpha.A'}$
   \\[\ruleverticalsep]
-%  
+%
   $\judgcomp{ \typing{\tyenv}{}{M \ [B]}{A\subst{B}{\alpha}} }{\Delta,\Loc}$ & $=$
   & let $\typing{\Delta}{\Loc}{M'}{\forall\alpha.C}$
     \ = \ $\judgcomp{ \typing{\tyenv}{}{M}{\forall\alpha.A} }{\Delta,\Loc}$
@@ -1065,7 +1065,7 @@ compilation based on the idea explained.
   $\polytycomp{A \funL{\Loc} B} \ = \ \polytycomp{A} \rightarrow \polytycomp{B}$
   \\
   $\polytycomp{\forall\alpha.A} \ = \ \forall\alpha.\polytycomp{A}$ &
-  $\polytycomp{\forall l.A} \ = \ \forall\alpha_l.Location \ \alpha_l \rightarrow \polytycomp{A}$ 
+  $\polytycomp{\forall l.A} \ = \ \forall\alpha_l.Location \ \alpha_l \rightarrow \polytycomp{A}$
 \\
 \end{tabular}
 \caption{A type compilation of \polyrpc into types in \linksrpc}
@@ -1075,75 +1075,75 @@ compilation based on the idea explained.
 \begin{figure}[t]
 \centering
 \begin{tabular}{p{\rulewidth}}
-%  
+%
   $\loctmcomp{\client} \ = \ Client$
-  \ \ \ 
+  \ \ \
   $\loctmcomp{\server} \ = \ Server$
-  \ \ \ 
+  \ \ \
   $\loctmcomp{l} \ = \ x_l$
   \\[\ruleverticalsep]
-%  
+%
   $\judgcomp{x}{\tyenv,\Loc,A} \ = \ x$
   \\[\ruleverticalsephalf]
-%  
+%
   $\judgcomp{(M,N)}{\tyenv,\Loc,A\times B} \ = \
   ( \ \judgcomp{M}{\tyenv,\Loc,A} \ , \ \judgcomp{N}{\tyenv,\Loc,B} \ )$
   \\[\ruleverticalsephalf]
-%  
+%
   $\judgcomp{\pi_i \ M}{\tyenv,\Loc,A_i} \ = \
   \pi_i \ (\judgcomp{M}{\tyenv,\Loc,A_1 \times A_2})$
   \ \ \ (i=1,2)
   \\[\ruleverticalsephalf]
-%  
+%
   $\judgcomp{\lamL{\Loc'}{x}{M}}{\tyenv,\Loc,A\funL{\Loc'}B} \ = \
   \lamL{\anncomp{\Loc'}}{x}{ \ \judgcomp{M}{(\tyenv,x:\polytycomp{A}),\Loc',\polytycomp{B}} }$
   \\[\ruleverticalsephalf]
-%  
+%
   $\judgcomp{M \ N}{\tyenv,\Loc,B} \ = \
   \judgcomp{M}{\tyenv,\Loc,A\funL{\Loc}B} \ \judgcomp{N}{\tyenv,\Loc,A}$
   \ \ \ (local procedure call)
   \\[\ruleverticalsephalf]
-%  
-  $\judgcomp{M \ N}{\tyenv,\client,B} \ = \ 
+%
+  $\judgcomp{M \ N}{\tyenv,\client,B} \ = \
   \judgcomp{M}{\tyenv,\client,A\funL{\server}B} \ \judgcomp{N}{\tyenv,\client,A}$
   \ \ \ (remote procedure call)
   \\[\ruleverticalsephalf]
-%  
-  $\judgcomp{M \ N}{\tyenv,\server,B} \ = \ 
+%
+  $\judgcomp{M \ N}{\tyenv,\server,B} \ = \
   \judgcomp{M}{\tyenv,\server,A\funL{\client}B} \ \judgcomp{N}{\tyenv,\server,A}$
   \ \ \ (remote procedure call)
   \\[\ruleverticalsephalf]
-%  
+%
   $\judgcomp{M \ N}{\tyenv,\Loc,B} \ = \
   if(\loctmcomp{\Loc}, \ if(\loctmcomp{\Loc'},f \ arg, f \ arg), \ if(\loctmcomp{\Loc'},f \ arg, f \ arg))
   $
   \\
-  \ \ \ \ \ \ \ \ \ where $f=\judgcomp{M}{\tyenv,\Loc,A\funL{\Loc'}B}$ and $arg=\judgcomp{N}{\tyenv,\Loc,A}$. 
+  \ \ \ \ \ \ \ \ \ where $f=\judgcomp{M}{\tyenv,\Loc,A\funL{\Loc'}B}$ and $arg=\judgcomp{N}{\tyenv,\Loc,A}$.
   \\
-  \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  $if(L,M,N)=\case{M}{Client\rightarrow M; Server\rightarrow N}$.   
+  \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  $if(L,M,N)=\case{M}{Client\rightarrow M; Server\rightarrow N}$.
   \\
   \ \ \ \ \ \ \ \ \ (local/remote procedure calls depending on conditionals)
   \\[\ruleverticalsephalf]
-%  
+%
   $\judgcomp{\Lambda l.V}{\tyenv,\Loc,\forall l.B} \ = \
   \Lambda\alpha.\lamL{}{\loctmcomp{l}}{ \judgcomp{V}{\tyenv,\Loc,B} }$
   \\[\ruleverticalsephalf]
-%  
+%
   $\judgcomp{M \ [\Loc']}{\tyenv,\Loc,B\subst{\Loc'}{l}} \ = \
   \judgcomp{M}{\tyenv,\Loc,B\subst{\Loc'}{l}} \
   [ \ \loctycomp{\Loc'}  \ ] \ [ \ \loctmcomp{\Loc'}  \ ]
   $
   \\[\ruleverticalsephalf]
-%  
+%
   $\judgcomp{\Lambda\alpha.V}{\tyenv,\Loc,\forall l.B} \ = \
   \Lambda\alpha. \judgcomp{V}{\tyenv,\Loc,B}$
   \\[\ruleverticalsephalf]
-%  
+%
   $\judgcomp{M \ [A]}{\tyenv,\Loc,B\subst{A}{\alpha}} \ = \
   \judgcomp{M}{\tyenv,\Loc,\forall\alpha.B} \ [ \ \polytycomp{A} \ ]$
   \\[\ruleverticalsep]
   $\anncomp{a} \ = \ a$
-  \ \ \ 
+  \ \ \
   $\anncomp{l} \ = \ (unknown)$
   \\
 \end{tabular}
@@ -1186,7 +1186,7 @@ would be compiled to
 where the type of
 $y_l$ is $Location \ \alpha$.
 %
-Then an application term in \polyrpc 
+Then an application term in \polyrpc
 \[
 (\Lambda l.\lamL{l}{f}{f \ 42}) \ [\client]
 \]
@@ -1244,15 +1244,15 @@ We have identified a technical problem involving polymorphic
 constructs in the adjustment of locations to resolve the location
 discrepancies resulting from our heuristic type compilation.
 %
-We will continue to study to solve this problem. 
+We will continue to study to solve this problem.
 
 %% \paragraph{Acknowledgements} \lipsum[6]
-	
+
 % \newpage
 \bibliography{polyrpc2021}
-	
+
 \appendix
-	
+
 \section{The Polymorphic RPC Calculus}
 \label{app:1}
 
@@ -1271,7 +1271,7 @@ programmers.
 \label{sec:polyrpc:syntax&semantics}
 
 \begin{figure}[h]
-\centering  
+\centering
 \begin{tabular}{ l  l  r  c  l }
 \multicolumn{5}{l}{\textbf{Syntax}} \\
  & Location & $a,b$   & $::=$ & $\client \ \ | \  \  \server$ \\
@@ -1286,7 +1286,7 @@ programmers.
     \begin{prooftree}
       \infer[left label=(Abs)]0{ \evalRPC{\lamL{b}{x}{M}}{a}{\lamL{b}{x}{M} }}
     \end{prooftree}
-    \ \ \ 
+    \ \ \
     \begin{prooftree}
       \hypo{ \evalRPC{L}{a}{\lamL{b}{x}{N}} }
       \hypo{ \evalRPC{M}{a}{W} }
@@ -1388,7 +1388,7 @@ same location.
 The remaining semantics rules are easily understood.
 
 \begin{figure}[h]
-\centering            
+\centering
 \begin{tabular}{l l r c l}
 \multicolumn{5}{l}{\textbf{Types}} \\
 & Type & $A,B,C$ & $::=$
@@ -1580,7 +1580,7 @@ the body of the polymorphic term.
     \begin{prooftree}
       \hypo{ \typing{\tyenvExtWith{l}}{\Loc}{M}{A}}
       \infer[left label=(T-Labs)]1{ \typing{\tyenv}{\Loc}{\Lambda l. M}{\forall l. A }}
-    \end{prooftree}    
+    \end{prooftree}
 \]
 
 %
@@ -1613,7 +1613,7 @@ this application to be a local procedure call. Consider
 \ ( \ \lambda^\client f. \ {\color{green} f \ [Int]} \ 456 \ ) \ g \
 \cdots
 \ ( \ \lambda^\server f. \ {\color{red} f \ [String]} \ ``456'' \ ) \ g \
-\cdots 
+\cdots
 \]
 %
 In the green colored part, the polymorphic term happens to be used at
@@ -1632,9 +1632,9 @@ With value restriction on polymorphism, we will never face this
 problem because both $f \ [Int]$ and $f \ [String]$ are enforced to be
 syntactic values that are relocatable everywhere.
 %
-This explains why relaxing value restriction in the polymorphic RPC
-calculus can be dangerous to statically located contexts of
-applications.
+This explains why naively relaxing value restriction in the
+polymorphic RPC calculus can be dangerous to statically located
+contexts of applications.
 
 
 %
@@ -1657,9 +1657,9 @@ for typing the body of type and location abstractions as follows.
     \begin{prooftree}
       \hypo{ \typing{\tyenvExtWith{l},l_0}{l_0}{M}{A}  \ \ \ \mbox{fresh} \ l_0}
       \infer[left label=(T-Labs)]1{ \typing{\tyenv}{\Loc}{\Lambda l. M}{\forall l. A }}
-    \end{prooftree}    
+    \end{prooftree}
 \]
-%    
+%
 Note that the fresh location variable replaces the lexically inherited
 location $\Loc$ in the naive typing rules.
 %
@@ -1699,6 +1699,35 @@ calculus.
 
 %
 The other motivation comes from a practical purpose.
+%
+A goal of multi-tier programming languages is to provide programmers
+the illusion that they feel like they are writing programs using a
+single-tier programming language.
+%
+Therefore, it is important to ensure that having this polymorphically
+located feature does not prevent the other features in single-tier
+programming languages.
+%
+For example, there have been studies on relaxing value restrictions in
+polymorphism in several cases as this: relaxing value restriction in
+polymorphism for constructor and accessor functions, polymorphic
+variants, and semi-explicit polymorphism [Jacques Garrigue], relaxing
+value restriction for algebraic effects and handlers [Ohad Kammar and
+  Matija Pretnar], [Taro Sekiyama and Atsushi Igarashi], [Taro
+  Sekiyama, Takeshi Tsukada, and Atsushi Igarashi].
+%  
+To integrate the feature of location polymorphism with these relaxed
+features, there is a need to investigate whether the feature of
+location polymorphism is type-safe.
+%
+
+It is also worth thinking about whether the value restriction in
+polymorphism is useful solely for the polymorphic RPC calculus itself
+without considering the other features.
+%
+We believe that the usefulness of the relaxed location polymorphism
+comes indirectly as will be explained in the following.
+
 %
 A goal of location inference is to infer as many static location as
 possible from RPC programs with minimal location annotations like the
@@ -1793,7 +1822,7 @@ Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
 
 
 \begin{figure}[h]
-\centering  
+\centering
 \begin{tabular}{ l  l  r  c  l }
 \multicolumn{5}{l}{\textbf{Syntax}} \\
  & Location & $a,b$   & $::=$ & $\client \ \ | \  \  \server$ \\
@@ -1809,7 +1838,7 @@ Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
     \begin{prooftree}
       \infer[left label=(Abs)]0{ \evalRPC{\lamL{b}{x}{M}}{a}{\lamL{b}{x}{M} }}
     \end{prooftree}
-    \ \ \ 
+    \ \ \
     \begin{prooftree}
       \hypo{ \evalRPC{L}{a}{\lamL{b}{x}{N}} }
       \hypo{ \evalRPC{M}{a}{W} }
@@ -1861,7 +1890,7 @@ Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
 
 
 \begin{figure}[h]
-\centering            
+\centering
 \begin{tabular}{l l r c l}
 \multicolumn{5}{l}{\textbf{Types}} \\
 & Type & $A,B,C$ & $::=$
