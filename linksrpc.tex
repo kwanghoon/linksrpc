@@ -2202,6 +2202,22 @@ Figure \ref{fig:augmentedpolyrpcmtysyste} defines a set of typing rules.
 \label{fig:augmentedpolyrpcmtysyste}
 \end{figure}
 
+%
+Note that the augmented polymorphic RPC calculus does not have any
+type soundness property because of the same reason as the
+aforementioned argument for the breach of the type soundness property
+of the polymorphic RPC calculus.
+%
+It is easy to make up a type-checked term but would get stuck by the
+augmented static location context to an application term in (App).
+%
+Later, a type-safe subset of the augmented calculus will be identified
+by an isomorphism with the relaxed calculus.
+%
+This will prove the type safety of the relaxed polymorphic RPC
+calculus under the staic location contexts of application terms.
+
+
 Now we define three logical relations to related the two calculus as
 $R(A,B)$ on types, $R(\tyenv_1, \tyenv_2)$ on typing environments, and
 $R(\typing{\tyenv_1}{\Loc_1}{M_1}{A_1},\typing{\tyenv_2}{\Loc_2}{M_2}{A_2})$
