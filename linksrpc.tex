@@ -1682,6 +1682,167 @@ We will show how the change of (T-Tabs) and (T-Labs) can guarantee the
 type safety of the relaxed polymorphic calculus after discussing the
 motivation on why the relaxed polymorphic calculus is useful.
 
+%
+We summarize the semantics and type system for the relaxed polymorphic
+RPC calculus in Figure \ref{fig:relaxedpolyrpc} and
+\ref{fig:relaxedpolyrpctysystem}.
+%
+The differences from those for the polymorphic RPC calculus are
+highlighted in red color.
+
+\begin{figure}[h]
+\centering
+\begin{tabular}{ l  l  r  c  l }
+\multicolumn{5}{l}{\textbf{Syntax}} \\
+ & Location & $a,b$   & $::=$ & $\client \ \ | \  \  \server$ \\
+ &          & $\Loc$  & $::=$  & $a  \ \ |  \ \ l$ \\
+ & Term     & $L,M,N$ & $::=$  & $V  \ | \  L \ M  \ | \  M[A]  \ | \  M[\Loc]  \ | \  (L,M)  \ |  \ \pi_i(M)$ \\
+ & Value & $V,W$ & $::=$ & $x  \ \ |  \ \ \lambda^{Loc} x.M  \ \ |  \ \ \Lambda\alpha.{\color{red} M}  \ \ |  \ \ \Lambda l.{\color{red} M} \ | \ (V,W)$ \\[\ruleverticalsep]
+\multicolumn{5}{l}{\textbf{Semantics}} \\
+\end{tabular}
+
+\begin{tabular}{p{\rulewidth} }
+  {
+    \begin{prooftree}
+      \infer[left label=(Abs)]0{ \evalRPC{\lamL{b}{x}{M}}{a}{\lamL{b}{x}{M} }}
+    \end{prooftree}
+    \ \ \
+    \begin{prooftree}
+      \hypo{ \evalRPC{L}{a}{\lamL{b}{x}{N}} }
+      \hypo{ \evalRPC{M}{a}{W} }
+      \hypo{ \evalRPC{N\subst{W}{x}}{b}{V}  }
+      \infer[left label=(App)]3{ \evalRPC{L \ M}{a}{V}  }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \infer[left label=(Tabs)]0{ \evalRPC{\Lambda\alpha.{\color{red} M}}{a}{\Lambda\alpha.{\color{red} M} }}
+    \end{prooftree}
+    \ \ \ \ \
+    {\color{red}
+    \begin{prooftree}
+      \hypo{ \evalRPC{M}{a}{\Lambda\alpha.N} }
+      \hypo{ \evalRPC{N\subst{B}{\alpha}}{a}{V} }
+      \infer[left label=(Tapp)]2{ \evalRPC{M[B]}{a}{V} }
+    \end{prooftree}
+    }
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \infer[left label=(Labs)]0{ \evalRPC{\Lambda l.{\color{red} M}}{a}{\Lambda l.{\color{red} M}} }
+    \end{prooftree}
+    \ \ \ \ \
+    {\color{red}
+    \begin{prooftree}
+      \hypo{ \evalRPC{M}{a}{\Lambda l.{N}} }
+      \hypo{ \evalRPC{N\subst{b}{l}}{a}{V} }
+      \infer[left label=(Lapp)]2{ \evalRPC{M[b]}{a}{V}  }
+    \end{prooftree}
+    }
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \evalRPC{L}{a}{V} }
+      \hypo{ \evalRPC{M}{a}{W} }
+      \infer[left label=(Pair)]2{ \evalRPC{(L,M)}{a}{(V,W) }}
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \evalRPC{M}{a}{(V_1,V_2)}  \ \ \ i\in\{1,2\}}
+      \infer[left label=(Proj-i)]1{ \evalRPC{\pi_i(M)}{a}{V_i}  }
+    \end{prooftree}
+  }
+\end{tabular}
+\caption{The relaxed polymorphic  RPC calculus \polyrpcM}
+\label{fig:relaxedpolyrpc}
+\end{figure}
+
+
+\begin{figure}[h]
+\centering
+\begin{tabular}{l l r c l}
+\multicolumn{5}{l}{\textbf{Types}} \\
+& Type & $A,B,C$ & $::=$
+& $base  \ \ | \ \  A\funL{Loc}B  \ \ | \ \  \alpha  \ \ | \ \  A \times B  \ \ | \ \  \forall\alpha.A 	\ \ | \ \  \forall l.A $ \\
+& Type environment & $\Gamma$ & $::=$
+& $\emptyset \ \ | \ \ \Gamma, x:A \ \ | \ \ \Gamma, \alpha \ \ | \ \ \Gamma, l$ \\[\ruleverticalsep]
+\multicolumn{5}{l}{\textbf{Typing Rules}} \\
+\end{tabular}
+
+\begin{tabular}{p{\rulewidth}}
+  {
+    \begin{prooftree}
+      \hypo{  \tyenv(x)=A }
+      \infer[left label=(T-Var)]1{ \typing{\tyenv}{\Loc}{x}{A} }
+    \end{prooftree}
+    \ \ \ \ \
+    \begin{prooftree}
+      \hypo{ \typing{\tyenvExt{x}{A}}{\Loc}{M}{B} }
+      %\hypo{ flv(\Loc) \subseteq \Delta  }
+      \infer[left label=(T-Abs)]1{ \typing{\tyenv}{\Loc'}{\lamL{\Loc}{x}{M}}{A\funL{\Loc}B} }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{  \typing{\tyenv}{\Loc}{L}{A\funL{\Loc'}B } }
+      \hypo{  \typing{\tyenv}{\Loc}{M}{A} }
+      %\hypo{  flv{A}\cup flv(\Loc') \subseteq \tyenv  }
+      \infer[left label=(T-App)]2{ \typing{\tyenv}{\Loc}{L \ M}{B}   }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    {\color{red}
+    \begin{prooftree}
+      \hypo{  \typing{\tyenv,l_0}{l_0}{M}{A} \ \ \ \mbox{fresh} \ l_0}
+      \infer[left label=(T-Tabs)]1{ \typing{\tyenv}{\Loc}{\Lambda\alpha. M}{\forall\alpha. A}   }
+    \end{prooftree}
+    }
+    \ \ \
+    \begin{prooftree}
+      \hypo{  \typing{\tyenv}{\Loc}{M}{\forall\alpha.A} }
+      \infer[left label=(T-Tapp)]1{ \typing{\tyenv}{\Loc}{M[B]}{A\subst{B}{\alpha}}   }
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    {\color{red}
+    \begin{prooftree}
+      \hypo{ \typing{\tyenvExtWith{l},l_0}{l_0}{M}{A}  \ \ \ \mbox{fresh} \ l_0}
+      \infer[left label=(T-Labs)]1{ \typing{\tyenv}{\Loc}{\Lambda l. M}{\forall l. A }}
+    \end{prooftree}
+    }
+    \ \ \
+    \begin{prooftree}
+      \hypo{ \typing{\tyenv}{\Loc}{M}{\forall l.A } }
+      % \hypo{ flv(\Loc')\subseteq\tyenv  }
+      \infer[left label=(T-Lapp)]1{ \typing{\tyenv}{\Loc}{M[\Loc']}{A\subst{\Loc'}{l}}}
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \typing{\tyenv}{Loc}{L}{A} }
+      \hypo{ \typing{\tyenv}{Loc}{M}{B} }
+      \infer[left label=(T-Pair)]2{ \typing{\tyenv}{Loc}{(L,M)}{ A \times B }}
+    \end{prooftree}
+  }
+\\[\ruleverticalsep]
+  {
+    \begin{prooftree}
+      \hypo{ \typing{\tyenv}{Loc}{M}{A_1 \times A_2} \ \ \ i\in\{1,2\} }
+      \infer[left label=(T-Proj-i)]1{ \typing{\tyenv}{Loc}{\pi_i(M)}{ A_i } }
+    \end{prooftree}
+  }
+\end{tabular}
+\caption{A type system for the relaxed polymorphic  RPC calculus}
+\label{fig:relaxedpolyrpctysystem}
+\end{figure}
+
 \subsection{Why does relaxing value restriction on polymorphism interest us?}
 
 %
@@ -1845,8 +2006,8 @@ by
 \]
 
 %
-Thus, the augmented relaxed polymorphic RPC calculus makes explicit
-the declared location of applications and checking its validity in
+Thus, the augmented polymorphic RPC calculus makes explicit the
+declared location of applications and checking its validity in
 runtime.
 %
 This is useful when we prove the type safety of the relaxed
@@ -1855,12 +2016,12 @@ is simulated by that of \polyrpcA especially in terms of the validity
 of declared locations of applications in runtime.
 
 %
-Now let us defined the augmented relaxed polymorphic RPC calculus. 
+Now let us defined the augmented polymorphic RPC calculus.
 %
-Figure \ref{fig:polyrpcm} presents terms and a dynamic semantics for
-an {\it augmented relaxed polymorphic RPC calculus}, \polyrpcA.
+Figure \ref{fig:augmentedpolyrpc} presents terms and a dynamic semantics for
+an {\it augmented polymorphic RPC calculus}, \polyrpcA.
 %
-Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
+Figure \ref{fig:augmentedpolyrpcmtysyste} defines a set of typing rules.
 
 % - An Account for the Value Restriction
 
@@ -1890,7 +2051,7 @@ Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
  & Location & $a,b$   & $::=$ & $\client \ \ | \  \  \server$ \\
  &          & $\Loc$  & $::=$  & $a  \ \ |  \ \ l$ \\
  & Term     & $L,M,N$ & $::=$  & $V  \ | \  L \ M \ {\color{red}\at{\ \Loc}} \ | \  M[A]  \ | \  M[\Loc]  \ | \  (L,M)  \ |  \ \pi_i(M)$ \\
- & Value & $V,W$ & $::=$ & $x  \ \ |  \ \ \lambda^{Loc} x.M  \ \ |  \ \ \Lambda\alpha._{\color{red} \eff} {\color{red} M}  \ \ |  \ \ \Lambda l._{\color{red} \eff} {\color{red} M} \ | \ (V,W)$ \\
+ & Value & $V,W$ & $::=$ & $x  \ \ |  \ \ \lambda^{Loc} x.M  \ \ |  \ \ \Lambda\alpha.V  \ \ |  \ \ \Lambda l.V \ | \ (V,W)$ \\
  & Context  & $\eff$  & $::=$ & $l$ \\[\ruleverticalsep]
 \multicolumn{5}{l}{\textbf{Semantics}} \\
 \end{tabular}
@@ -1911,25 +2072,23 @@ Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
 \\[\ruleverticalsep]
   {
     \begin{prooftree}
-      \infer[left label=(Tabs)]0{ \evalRPC{\Lambda\alpha._{\color{red} \eff}M}{a}{\Lambda\alpha._{\color{red} \eff}M }}
+      \infer[left label=(Tabs)]0{ \evalRPC{\Lambda\alpha.V}{a}{\Lambda\alpha.V }}
     \end{prooftree}
     \ \ \ \ \
     \begin{prooftree}
-      \hypo{ \evalRPC{M}{a}{\Lambda\alpha._{\color{red} \eff}N} }
-      \hypo{ \evalRPC{N\subst{B}{\alpha}{\color{red} \subst{a}{\eff}}}{a}{V}}
-      \infer[left label=(Tapp)]2{ \evalRPC{M[B]}{a}{V} }
+      \hypo{ \evalRPC{M}{a}{\Lambda\alpha.V} }
+      \infer[left label=(Tapp)]1{ \evalRPC{M[B]}{a}{V\subst{B}{\alpha}} }
     \end{prooftree}
   }
 \\[\ruleverticalsep]
   {
     \begin{prooftree}
-      \infer[left label=(Labs)]0{ \evalRPC{\Lambda l._{\color{red} \eff}M}{a}{\Lambda l._{\color{red} \eff}M} }
+      \infer[left label=(Labs)]0{ \evalRPC{\Lambda l.V}{a}{\Lambda l.V} }
     \end{prooftree}
     \ \ \ \ \
     \begin{prooftree}
-      \hypo{ \evalRPC{M}{a}{\Lambda l._{\color{red} \eff}{N}} }
-      \hypo{ \evalRPC{N\subst{b}{l}{\color{red}\subst{a}{\eff}}}{a}{V}  }
-      \infer[left label=(Lapp)]2{ \evalRPC{M[b]}{a}{V}  }
+      \hypo{ \evalRPC{M}{a}{\Lambda l.V} }
+      \infer[left label=(Lapp)]1{ \evalRPC{M[b]}{a}{V\subst{b}{l}}  }
     \end{prooftree}
   }
 \\[\ruleverticalsep]
@@ -1946,8 +2105,8 @@ Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
     \end{prooftree}
   }
 \end{tabular}
-\caption{The polymorphic  RPC calculus with no value restriction on polymorphism: \polyrpcA}
-\label{fig:polyrpcm}
+\caption{An augmented polymorphic  RPC calculus}
+\label{fig:augmentedpolyrpc}
 \end{figure}
 
 
@@ -1956,7 +2115,7 @@ Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
 \begin{tabular}{l l r c l}
 \multicolumn{5}{l}{\textbf{Types}} \\
 & Type & $A,B,C$ & $::=$
-& $base  \ \ | \ \  A\funL{Loc}B  \ \ | \ \  \alpha  \ \ | \ \  A \times B  \ \ | \ \  \forall\alpha._{\color{red} \eff} A 	\ \ | \ \  \forall l._{\color{red} \eff} A $ \\
+& $base  \ \ | \ \  A\funL{Loc}B  \ \ | \ \  \alpha  \ \ | \ \  A \times B  \ \ | \ \  \forall\alpha.A 	\ \ | \ \  \forall l.A $ \\
 & Type environment & $\Gamma$ & $::=$
 & $\emptyset \ \ | \ \ \Gamma, x:A \ \ | \ \ \Gamma, \alpha \ \ | \ \ \Gamma, l$ \\[\ruleverticalsep]
 \multicolumn{5}{l}{\textbf{Typing Rules}} \\
@@ -1980,34 +2139,31 @@ Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
     \begin{prooftree}
       \hypo{  \typing{\tyenv}{\Loc}{L}{A\funL{\Loc'}B } }
       \hypo{  \typing{\tyenv}{\Loc}{M}{A} }
-      %\hypo{  flv{A}\cup flv(\Loc') \subseteq \tyenv  }
-      \infer[left label=(T-App)]2{ \typing{\tyenv}{\Loc}{L \ M \ \at{\ \Loc}}{B}   }
+      \infer[left label=(T-App)]2{ \typing{\tyenv}{\Loc}{L \ M \ {\color{red} \at{\ \Loc}}}{B}   }
     \end{prooftree}
   }
 \\[\ruleverticalsep]
   {
     \begin{prooftree}
-      \hypo{  \typing{\tyenv,\alpha{\color{red},\eff}}{\color{red}\eff}{M}{A} }
-      \infer[left label=(T-Tabs)]1{ \typing{\tyenv}{\Loc}{\Lambda\alpha._{\color{red} \eff} M}{\forall\alpha._{\color{red} \eff} A}   }
+      \hypo{  \typing{\tyenv,\alpha}{\Loc}{V}{A} }
+      \infer[left label=(T-Tabs)]1{ \typing{\tyenv}{\Loc}{\Lambda\alpha.V}{\forall\alpha. A}   }
     \end{prooftree}
     \ \ \
     \begin{prooftree}
-      \hypo{  \typing{\tyenv}{\Loc}{M}{\forall\alpha._{\color{red} \eff} A} }
-      \infer[left label=(T-Tapp)]1{ \typing{\tyenv}{\Loc}{M[B]}{A\subst{B}{\alpha}{\color{red}\subst{\Loc}{\eff}}}   }
+      \hypo{  \typing{\tyenv}{\Loc}{M}{\forall\alpha.A} }
+      \infer[left label=(T-Tapp)]1{ \typing{\tyenv}{\Loc}{M[B]}{A\subst{B}{\alpha}}   }
     \end{prooftree}
   }
 \\[\ruleverticalsep]
   {
     \begin{prooftree}
-      \hypo{ \typing{\tyenvExtWith{l}{\color{red},\eff}}{\color{red}\eff}{M}{A} }
-      %\hypo{ l \not\in flv(\varenv)\cup flv(\tyenv) \cup flv(\Loc) }
-      \infer[left label=(T-Labs)]1{ \typing{\tyenv}{\Loc}{\Lambda l._{\color{red} \eff} M}{\forall l._{\color{red} \eff} A }}
+      \hypo{ \typing{\tyenvExtWith{l}}{\Loc}{V}{A} }
+      \infer[left label=(T-Labs)]1{ \typing{\tyenv}{\Loc}{\Lambda l.V}{\forall l.A }}
     \end{prooftree}
     \ \ \
     \begin{prooftree}
-      \hypo{ \typing{\tyenv}{\Loc}{M}{\forall l._{\color{red} \eff} A } }
-      % \hypo{ flv(\Loc')\subseteq\tyenv  }
-      \infer[left label=(T-Lapp)]1{ \typing{\tyenv}{\Loc}{M[\Loc']}{A\subst{\Loc'}{l}{\color{red}\subst{\Loc}{\eff}}}}
+      \hypo{ \typing{\tyenv}{\Loc}{M}{\forall l.A } }
+      \infer[left label=(T-Lapp)]1{ \typing{\tyenv}{\Loc}{M[\Loc']}{A\subst{\Loc'}{l}}}
     \end{prooftree}
   }
 \\[\ruleverticalsep]
@@ -2026,14 +2182,21 @@ Figure \ref{fig:polyrpcmtysystem} defines a set of typing rules.
     \end{prooftree}
   }
 \end{tabular}
-\caption{A type system for \polyrpcA}
-\label{fig:polyrpcmtysystem}
+\caption{A type system for the augmented polymorphic RPC calculus}
+\label{fig:augmentedpolyrpcmtysyste}
 \end{figure}
 
 Now we define three logical relations between the two calculus as
 $R(A,B)$ on types, $R(\tyenv_1, \tyenv_2)$ on typing environments, and
 $R(\typing{\tyenv_1}{\Loc_1}{M_1}{A_1},\typing{\tyenv_2}{\Loc_2}{M_2}{A_2})$
 on typing derivations (or on terms).
+
+%% ToDO:
+
+%%  (1) Define logical relations to use for proving an equivalence
+%%      between the relaxed calculus and the augmented one.
+%%  (2) Prove the equivalence.
+%%  (3) Discuss any effects on type erasure implementation.
 
 \end{document}
 
@@ -2057,3 +2220,152 @@ on typing derivations (or on terms).
 %% However, it does not tell why any attempts to relax the value
 %% restriction can break the type soundness of the polymorphic RPC
 %% calculus at all.
+
+
+%% Saving just in case ...
+%% \begin{figure}[h]
+%% \centering
+%% \begin{tabular}{ l  l  r  c  l }
+%% \multicolumn{5}{l}{\textbf{Syntax}} \\
+%%  & Location & $a,b$   & $::=$ & $\client \ \ | \  \  \server$ \\
+%%  &          & $\Loc$  & $::=$  & $a  \ \ |  \ \ l$ \\
+%%  & Term     & $L,M,N$ & $::=$  & $V  \ | \  L \ M \ {\color{red}\at{\ \Loc}} \ | \  M[A]  \ | \  M[\Loc]  \ | \  (L,M)  \ |  \ \pi_i(M)$ \\
+%%  & Value & $V,W$ & $::=$ & $x  \ \ |  \ \ \lambda^{Loc} x.M  \ \ |  \ \ \Lambda\alpha._{\color{red} \eff} {\color{red} M}  \ \ |  \ \ \Lambda l._{\color{red} \eff} {\color{red} M} \ | \ (V,W)$ \\
+%%  & Context  & $\eff$  & $::=$ & $l$ \\[\ruleverticalsep]
+%% \multicolumn{5}{l}{\textbf{Semantics}} \\
+%% \end{tabular}
+
+%% \begin{tabular}{p{\rulewidth} }
+%%   {
+%%     \begin{prooftree}
+%%       \infer[left label=(Abs)]0{ \evalRPC{\lamL{b}{x}{M}}{a}{\lamL{b}{x}{M} }}
+%%     \end{prooftree}
+%%     \ \ \
+%%     \begin{prooftree}
+%%       \hypo{ \evalRPC{L}{a}{\lamL{b}{x}{N}} }
+%%       \hypo{ \evalRPC{M}{a}{W} }
+%%       \hypo{ \evalRPC{N\subst{W}{x}}{b}{V}  }
+%%       \infer[left label=(App)]3{ \evalRPC{L \ M \ {\color{red} \at{\ a}}}{a}{V}  }
+%%     \end{prooftree}
+%%   }
+%% \\[\ruleverticalsep]
+%%   {
+%%     \begin{prooftree}
+%%       \infer[left label=(Tabs)]0{ \evalRPC{\Lambda\alpha._{\color{red} \eff}M}{a}{\Lambda\alpha._{\color{red} \eff}M }}
+%%     \end{prooftree}
+%%     \ \ \ \ \
+%%     \begin{prooftree}
+%%       \hypo{ \evalRPC{M}{a}{\Lambda\alpha._{\color{red} \eff}N} }
+%%       \hypo{ \evalRPC{N\subst{B}{\alpha}{\color{red} \subst{a}{\eff}}}{a}{V}}
+%%       \infer[left label=(Tapp)]2{ \evalRPC{M[B]}{a}{V} }
+%%     \end{prooftree}
+%%   }
+%% \\[\ruleverticalsep]
+%%   {
+%%     \begin{prooftree}
+%%       \infer[left label=(Labs)]0{ \evalRPC{\Lambda l._{\color{red} \eff}M}{a}{\Lambda l._{\color{red} \eff}M} }
+%%     \end{prooftree}
+%%     \ \ \ \ \
+%%     \begin{prooftree}
+%%       \hypo{ \evalRPC{M}{a}{\Lambda l._{\color{red} \eff}{N}} }
+%%       \hypo{ \evalRPC{N\subst{b}{l}{\color{red}\subst{a}{\eff}}}{a}{V}  }
+%%       \infer[left label=(Lapp)]2{ \evalRPC{M[b]}{a}{V}  }
+%%     \end{prooftree}
+%%   }
+%% \\[\ruleverticalsep]
+%%   {
+%%     \begin{prooftree}
+%%       \hypo{ \evalRPC{L}{a}{V} }
+%%       \hypo{ \evalRPC{M}{a}{W} }
+%%       \infer[left label=(Pair)]2{ \evalRPC{(L,M)}{a}{(V,W) }}
+%%     \end{prooftree}
+%%     \ \ \ \ \
+%%     \begin{prooftree}
+%%       \hypo{ \evalRPC{M}{a}{(V_1,V_2)}  \ \ \ i\in\{1,2\}}
+%%       \infer[left label=(Proj-i)]1{ \evalRPC{\pi_i(M)}{a}{V_i}  }
+%%     \end{prooftree}
+%%   }
+%% \end{tabular}
+%% \caption{The polymorphic  RPC calculus with no value restriction on polymorphism: \polyrpcA}
+%% \label{fig:polyrpcm}
+%% \end{figure}
+
+
+%% \begin{figure}[h]
+%% \centering
+%% \begin{tabular}{l l r c l}
+%% \multicolumn{5}{l}{\textbf{Types}} \\
+%% & Type & $A,B,C$ & $::=$
+%% & $base  \ \ | \ \  A\funL{Loc}B  \ \ | \ \  \alpha  \ \ | \ \  A \times B  \ \ | \ \  \forall\alpha._{\color{red} \eff} A 	\ \ | \ \  \forall l._{\color{red} \eff} A $ \\
+%% & Type environment & $\Gamma$ & $::=$
+%% & $\emptyset \ \ | \ \ \Gamma, x:A \ \ | \ \ \Gamma, \alpha \ \ | \ \ \Gamma, l$ \\[\ruleverticalsep]
+%% \multicolumn{5}{l}{\textbf{Typing Rules}} \\
+%% \end{tabular}
+
+%% \begin{tabular}{p{\rulewidth}}
+%%   {
+%%     \begin{prooftree}
+%%       \hypo{  \tyenv(x)=A }
+%%       \infer[left label=(T-Var)]1{ \typing{\tyenv}{\Loc}{x}{A} }
+%%     \end{prooftree}
+%%     \ \ \ \ \
+%%     \begin{prooftree}
+%%       \hypo{ \typing{\tyenvExt{x}{A}}{\Loc}{M}{B} }
+%%       %\hypo{ flv(\Loc) \subseteq \Delta  }
+%%       \infer[left label=(T-Abs)]1{ \typing{\tyenv}{\Loc'}{\lamL{\Loc}{x}{M}}{A\funL{\Loc}B} }
+%%     \end{prooftree}
+%%   }
+%% \\[\ruleverticalsep]
+%%   {
+%%     \begin{prooftree}
+%%       \hypo{  \typing{\tyenv}{\Loc}{L}{A\funL{\Loc'}B } }
+%%       \hypo{  \typing{\tyenv}{\Loc}{M}{A} }
+%%       %\hypo{  flv{A}\cup flv(\Loc') \subseteq \tyenv  }
+%%       \infer[left label=(T-App)]2{ \typing{\tyenv}{\Loc}{L \ M \ \at{\ \Loc}}{B}   }
+%%     \end{prooftree}
+%%   }
+%% \\[\ruleverticalsep]
+%%   {
+%%     \begin{prooftree}
+%%       \hypo{  \typing{\tyenv,\alpha{\color{red},\eff}}{\color{red}\eff}{M}{A} }
+%%       \infer[left label=(T-Tabs)]1{ \typing{\tyenv}{\Loc}{\Lambda\alpha._{\color{red} \eff} M}{\forall\alpha._{\color{red} \eff} A}   }
+%%     \end{prooftree}
+%%     \ \ \
+%%     \begin{prooftree}
+%%       \hypo{  \typing{\tyenv}{\Loc}{M}{\forall\alpha._{\color{red} \eff} A} }
+%%       \infer[left label=(T-Tapp)]1{ \typing{\tyenv}{\Loc}{M[B]}{A\subst{B}{\alpha}{\color{red}\subst{\Loc}{\eff}}}   }
+%%     \end{prooftree}
+%%   }
+%% \\[\ruleverticalsep]
+%%   {
+%%     \begin{prooftree}
+%%       \hypo{ \typing{\tyenvExtWith{l}{\color{red},\eff}}{\color{red}\eff}{M}{A} }
+%%       %\hypo{ l \not\in flv(\varenv)\cup flv(\tyenv) \cup flv(\Loc) }
+%%       \infer[left label=(T-Labs)]1{ \typing{\tyenv}{\Loc}{\Lambda l._{\color{red} \eff} M}{\forall l._{\color{red} \eff} A }}
+%%     \end{prooftree}
+%%     \ \ \
+%%     \begin{prooftree}
+%%       \hypo{ \typing{\tyenv}{\Loc}{M}{\forall l._{\color{red} \eff} A } }
+%%       % \hypo{ flv(\Loc')\subseteq\tyenv  }
+%%       \infer[left label=(T-Lapp)]1{ \typing{\tyenv}{\Loc}{M[\Loc']}{A\subst{\Loc'}{l}{\color{red}\subst{\Loc}{\eff}}}}
+%%     \end{prooftree}
+%%   }
+%% \\[\ruleverticalsep]
+%%   {
+%%     \begin{prooftree}
+%%       \hypo{ \typing{\tyenv}{Loc}{L}{A} }
+%%       \hypo{ \typing{\tyenv}{Loc}{M}{B} }
+%%       \infer[left label=(T-Pair)]2{ \typing{\tyenv}{Loc}{(L,M)}{ A \times B }}
+%%     \end{prooftree}
+%%   }
+%% \\[\ruleverticalsep]
+%%   {
+%%     \begin{prooftree}
+%%       \hypo{ \typing{\tyenv}{Loc}{M}{A_1 \times A_2} \ \ \ i\in\{1,2\} }
+%%       \infer[left label=(T-Proj-i)]1{ \typing{\tyenv}{Loc}{\pi_i(M)}{ A_i } }
+%%     \end{prooftree}
+%%   }
+%% \end{tabular}
+%% \caption{A type system for \polyrpcA}
+%% \label{fig:polyrpcmtysystem}
+%% \end{figure}
