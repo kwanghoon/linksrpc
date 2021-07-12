@@ -288,6 +288,9 @@
 \newcommand{\at}[1]{@#1}
 \newcommand{\eff}{\mbox{\texttt{ctx}}}
 
+\newcommand{\logicalRelText}{R}
+\newcommand{\logicalRel}[2]{\logicalRelText \ #1 \ #2}
+\newcommand{\logicalRelJudg}[2]{\logicalRelText \ (#1) \ (#2)}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -1956,7 +1959,7 @@ location inference algorithm.
 %% Using this idea, we are able to design a new RPC calculus that relaxes
 %% the value restriction on polymorphism.
 
-\subsection{A relaxed polymorphic RPC calculus augmented with static location contexts}
+\subsection{A polymorphic RPC calculus augmented with static location contexts}
 
 %
 A counterexample was shown previously to reveal a breach of the type
@@ -2186,10 +2189,180 @@ Figure \ref{fig:augmentedpolyrpcmtysyste} defines a set of typing rules.
 \label{fig:augmentedpolyrpcmtysyste}
 \end{figure}
 
-Now we define three logical relations between the two calculus as
+Now we define three logical relations to related the two calculus as
 $R(A,B)$ on types, $R(\tyenv_1, \tyenv_2)$ on typing environments, and
 $R(\typing{\tyenv_1}{\Loc_1}{M_1}{A_1},\typing{\tyenv_2}{\Loc_2}{M_2}{A_2})$
-on typing derivations (or on terms).
+on terms (on typing derivations).
+
+%% R A B:
+\begin{itemize}
+\item $\logicalRel{A}{B}$:
+\end{itemize}
+
+\begin{itemize}
+\item[-]
+$\logicalRel{base}{base}$
+
+\item[-]
+$\logicalRel{\alpha}{\alpha}$
+
+\item[-]
+$\logicalRel{(A_1\times A_2)}{(B_1\times B_2)}$ \
+if
+$\logicalRel{A_1}{B_1}$ and $\logicalRel{A_2}{B_2}$
+
+\item[-]
+$\logicalRel{(A_1\funL{\Loc} A_2)}{(B_1\funL{\Loc} B_2)}$ \
+if
+$\logicalRel{A_1}{B_1}$ and $\logicalRel{A_2}{B_2}$
+
+\item[-]
+$\logicalRel{(\forall\alpha.A)}{(\forall\alpha.\forall l. unit \funL{l}B)}$ \
+if
+$\logicalRel{A}{B}$
+
+\item[-]
+$\logicalRel{(\forall l'.A)}{(\forall l'.\forall l. unit \funL{l}B)}$ \
+if
+$\logicalRel{A}{B}$
+\end{itemize}
+
+%% R Gamma Delta:
+\begin{itemize}
+\item $\logicalRel{\Gamma}{\Delta}$:
+\end{itemize}
+
+\begin{itemize}
+\item[-] $\logicalRel{\emptyset}{\emptyset}$
+
+\item[-] 
+$\logicalRel{(\Gamma,x:A)}{(\Delta,x:B)}$ \
+if
+$\logicalRel{\Gamma}{\Delta}$ and $\logicalRel{A}{B}$
+
+\item[-] 
+$\logicalRel{(\Gamma,\alpha)}{(\Delta,\alpha)}$ \ 
+if
+$\logicalRel{\Gamma}{\Delta}$
+
+\item[-] 
+$\logicalRel{(\Gamma,l)}{(\Delta,l)}$ \ 
+if
+$\logicalRel{\Gamma}{\Delta}$
+\end{itemize}
+
+%% R (Gamma |-Loc M : A) (Delta |-Loc N : B)
+\begin{itemize}
+\item
+$\logicalRelJudg
+ {\typing{\Gamma}{\Loc}{M}{A}}
+ {\typing{\Delta}{\Loc}{N}{B}}$:
+\end{itemize}
+
+\begin{itemize}
+\item[-]
+$\logicalRelJudg
+ {\typing{\Gamma}{\Loc}{x}{A}}
+ {\typing{\Delta}{\Loc}{x}{B}}$
+\ 
+if $\logicalRel{\Gamma}{\Delta}$ and $\logicalRel{A}{B}$
+
+\item[-]
+$\logicalRelJudg
+ {\typing{\Gamma}{\Loc'}{\lamL{\Loc}{x}{M}}{A_1\funL{\Loc}A_2}}
+ {\typing{\Delta}{\Loc'}{\lamL{\Loc}{x}{N}}{B_1\funL{\Loc}B_2}}$ \\
+if 
+$\logicalRel{\Gamma}{\Delta}$, \ 
+$\logicalRel{(A_1\funL{\Loc}A_2)}{(B_1\funL{\Loc}B_2)}$, \ and 
+$\logicalRelJudg
+ {\typing{\Gamma,x:A_1}{\Loc}{M}{A_2}}
+ {\typing{\Delta,x:B_1}{\Loc}{N}{B_2}}$
+
+\item[-]
+$\logicalRelJudg
+ {\typing{\Gamma}{\Loc}{M_1 \ N_1}{A_2}}
+ {\typing{\Delta}{\Loc}{M_2 \ N_2}{B_2}}$ \\
+if 
+$\logicalRel{\Gamma}{\Delta}$, \ 
+$\logicalRel{A_2}{B_2}$, \ 
+$\logicalRelJudg
+ {\typing{\Gamma}{\Loc}{M_1}{A_1\funL{\Loc'}A_2}}
+ {\typing{\Delta}{\Loc}{M_2}{B_1\funL{\Loc'}B_2}}$, \\ and
+$\logicalRelJudg
+ {\typing{\Gamma}{\Loc}{N_1}{A_1}}
+ {\typing{\Delta}{\Loc}{N_2}{B_1}}$
+
+\item[-]
+$\logicalRelJudg
+ {\typing{\Gamma}{\Loc}{\Lambda\alpha.M}{\forall\alpha.A}}
+ {\typing{\Delta}{\Loc}{\Lambda\alpha.\Lambda.l.\lamL{l}{x}{N}}{\forall\alpha.\forall l.unit\funL{l}B}}$ \\
+if 
+$\logicalRel{\Gamma}{\Delta}$, \
+$\logicalRel{(\forall\alpha.A)}{(\forall\alpha.\forall l.unit\funL{l}B)}$, \
+$x \not\in fv(N)$, \ and \ 
+$\logicalRelJudg
+ {\typing{\Gamma,\alpha,l}{l}{M}{A}}
+ {\typing{\Delta,\alpha,l}{l}{N}{B}}$
+
+\item[-]
+$\logicalRelJudg
+  {\typing{\Gamma}{\Loc}{M[B]}{A\subst{B}{\alpha}}}
+  {\typing{\Gamma}{\Loc}{N[C] \ [\Loc] \ ()}{A\subst{C}{\alpha}\subst{\Loc}{l}}}$ \\  % \subst{()}{x}
+if
+$\logicalRel{\Gamma}{\Delta}$, \
+$\logicalRel{B}{C}$, \
+$\logicalRel{(A\subst{B}{\alpha})}{(A\subst{C}{\alpha}\subst{\Loc}{l})}$, \\
+and $\logicalRelJudg
+  {\typing{\Gamma}{\Loc}{M}{\forall\alpha.A}}
+  {\typing{\Gamma}{\Loc}{N}{\forall\alpha.\forall l.unit\funL{l}A}}$
+
+\item[-]
+$\logicalRelJudg
+ {\typing{\Gamma}{\Loc}{\Lambda l'.M}{\forall l'.A}}
+ {\typing{\Delta}{\Loc}{\Lambda l'.\Lambda.l.\lamL{l}{x}{N}}{\forall l'.\forall l.unit\funL{l}B}}$ \\
+if 
+$\logicalRel{\Gamma}{\Delta}$, \
+$\logicalRel{(\forall l'.A)}{(\forall l'.\forall l.unit\funL{l}B)}$, \
+$x \not\in fv(N)$, \ and \ 
+$\logicalRelJudg
+ {\typing{\Gamma,l',l}{l}{M}{A}}
+ {\typing{\Delta,l',l}{l}{N}{B}}$
+
+\item[-]
+$\logicalRelJudg
+  {\typing{\Gamma}{\Loc}{M[\Loc']}{A\subst{\Loc'}{l'}}}
+  {\typing{\Gamma}{\Loc}{N[\Loc'] \ [\Loc] \ ()}{A\subst{\Loc'}{l'}\subst{\Loc}{l}}}$ \\  % \subst{()}{x}
+if
+$\logicalRel{\Gamma}{\Delta}$, \
+$\logicalRel{(A\subst{\Loc'}{l'})}{(A\subst{\Loc'}{l'}\subst{\Loc}{l})}$, \\
+and $\logicalRelJudg
+  {\typing{\Gamma}{\Loc}{M}{\forall l'.A}}
+  {\typing{\Gamma}{\Loc}{N}{\forall l'.\forall l.unit\funL{l}A}}$
+
+\item[-]
+$\logicalRelJudg
+  {\typing{\Gamma}{\Loc}{(M_1,M_2)}{A_1\times A_2}}
+  {\typing{\Gamma}{\Loc}{(N_1,N_2)}{B_1\times B_2}}$ \\
+if
+$\logicalRel{\Gamma}{\Delta}$, \
+$\logicalRel{(A_1\times A_2)}{(B_1\times B_2)}$, \
+$\logicalRelJudg
+  {\typing{\Gamma}{\Loc}{M_i}{A_i}}
+  {\typing{\Gamma}{\Loc}{N_i}{B_i}}$ for $i=1,2$
+
+\item[-]
+$\logicalRelJudg
+  {\typing{\Gamma}{\Loc}{\pi_i(M)}{A_i}}
+  {\typing{\Gamma}{\Loc}{\pi_i(N)}{B_i}}$ \\
+if
+$\logicalRel{\Gamma}{\Delta}$, \
+$\logicalRel{A_i}{B_i}$, \
+$\logicalRelJudg
+  {\typing{\Gamma}{\Loc}{M}{A_1\times A_2}}
+  {\typing{\Gamma}{\Loc}{N}{B_1\times B_2}}$
+
+\end{itemize}
+
 
 %% ToDO:
 
@@ -2197,6 +2370,42 @@ on typing derivations (or on terms).
 %%      between the relaxed calculus and the augmented one.
 %%  (2) Prove the equivalence.
 %%  (3) Discuss any effects on type erasure implementation.
+
+\begin{theorem}[Equivalence between the relaxed and augmented polymorphic RPC calculi]
+%
+Assume closed terms $M$ and $N$ such that
+$\logicalRel{(\typing{\emptyset}{a}{M}{A})}{(\typing{\emptyset}{a}{N}{B})}$.
+Then
+$\evalRPC{M}{a}{V}$ if and only if $\evalRPC{N}{a}{W}$ such that
+$\logicalRel{(\typing{\emptyset}{a}{V}{A})}{(\typing{\emptyset}{a}{W}{B})}$.
+\label{thm:equivalencebetweenrelaxedaugmentedrpc}
+\end{theorem}
+
+\begin{corollary}[Type soundness for the relaxed polymorphic RPC calculus]
+%
+Assume a closed term $M$ in the relaxed polymorphic RPC calculus such
+that \ $\typing{\emptyset}{a}{M}{A}$ and $\evalRPC{M}{a}{V}$.
+%
+Every static location context of application terms in $M$ in the
+typing is preserved during the evaluation.
+\label{thm:typesoundnessforrelaxedpolyrpc}
+\end{corollary}
+\begin{proof}
+%
+Suppose the static location context of an application term $L \ N$ in
+$M$ is $\Loc$ while the term is evaluated at $\Loc'$ such that
+$\Loc\not=\Loc'$.
+%
+Then there would exist $L' \ N'$ such that $\evalRPC{L' \ N'
+\at{\Loc}}{\Loc'}{V'}$ in the augmented polymorphic RPC calculus.
+%
+But Theorem
+\ref{thm:equivalencebetweenrelaxedaugmentedrpc}
+must preclude the existence of such evaluation. 
+contradiction.
+%
+Therefore, we conclude $\Loc=\Loc'$ by contradiction.
+\end{proof}
 
 \end{document}
 
