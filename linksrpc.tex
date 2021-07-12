@@ -1686,7 +1686,7 @@ type safety of the relaxed polymorphic calculus after discussing the
 motivation on why the relaxed polymorphic calculus is useful.
 
 %
-We summarize the semantics and type system for the relaxed polymorphic
+We present the semantics and type system for the relaxed polymorphic
 RPC calculus in Figure \ref{fig:relaxedpolyrpc} and
 \ref{fig:relaxedpolyrpctysystem}.
 %
@@ -1845,6 +1845,19 @@ highlighted in red color.
 \caption{A type system for the relaxed polymorphic  RPC calculus}
 \label{fig:relaxedpolyrpctysystem}
 \end{figure}
+
+%
+We can prove the type soundness for the relaxed polymorphic RPC
+calculus.
+
+\begin{theorem}[Type soundness for \polyrpcM]
+For a closed term $M$, if \ $\typing{\emptyset}{a}{M}{A}$ and
+$\evalRPC{M}{a}{V}$, then $\typing{\emptyset}{a}{V}{A}$.
+\label{thm:typesoundnessforrelaxedpolyrpc}
+\end{theorem}
+\begin{proof}
+...
+\end{proof}
 
 \subsection{Why does relaxing value restriction on polymorphism interest us?}
 
@@ -2371,6 +2384,15 @@ $\logicalRelJudg
 %%  (2) Prove the equivalence.
 %%  (3) Discuss any effects on type erasure implementation.
 
+\begin{theorem}[]
+(J1): $\typing{\Gamma}{\Loc}{M}{A}$ if and only if 
+(J2): $\typing{\Delta}{\Loc}{N}{B}$ such that $\logicalRel{J1}{J2}$.
+\label{thm:derivationbetweenrelaxedaugmentedrpc}
+\end{theorem}
+\begin{proof}
+This is proved by indunction on the height of typing derivations.
+\end{proof}
+
 \begin{theorem}[Equivalence between the relaxed and augmented polymorphic RPC calculi]
 %
 Assume closed terms $M$ and $N$ such that
@@ -2384,13 +2406,18 @@ $\logicalRel{(\typing{\emptyset}{a}{V}{A})}{(\typing{\emptyset}{a}{W}{B})}$.
 \begin{corollary}[Type soundness for the relaxed polymorphic RPC calculus]
 %
 Assume a closed term $M$ in the relaxed polymorphic RPC calculus such
-that \ $\typing{\emptyset}{a}{M}{A}$ and $\evalRPC{M}{a}{V}$.
+that \ (J): $\typing{\emptyset}{a}{M}{A}$ and $\evalRPC{M}{a}{V}$.
 %
 Every static location context of application terms in $M$ in the
 typing is preserved during the evaluation.
 \label{thm:typesoundnessforrelaxedpolyrpc}
 \end{corollary}
 \begin{proof}
+%
+By Theorem \ref{thm:derivationbetweenrelaxedaugmentedrpc}, (J) implies
+that there exists (J'): $\typing{\emptyset}{a}{M'}{A'}$ such that
+$\logicalRel{J}{J'}$.
+
 %
 Suppose the static location context of an application term $L \ N$ in
 $M$ is $\Loc$ while the term is evaluated at $\Loc'$ such that
